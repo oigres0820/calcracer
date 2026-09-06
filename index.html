@@ -1,0 +1,3061 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CalcRacer · Cálculo Multivariable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --neon-cyan:#05f7ff;
+    --neon-magenta:#ff0080;
+    --neon-yellow:#ffd400;
+    --neon-green:#39ff6a;
+    --neon-orange:#ff8a1f;
+    --bg-0:#050508;
+    --bg-1:#0c0d16;
+    --bg-2:#12131f;
+    --panel:#0e0f1a;
+    --border:#22243a;
+    --text:#e8ecff;
+    --text-dim:#8a8fb0;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background:var(--bg-0);
+    color:var(--text);
+    font-family:'Rajdhani',sans-serif;
+    overflow-x:hidden;
+  }
+  .font-display{font-family:'Orbitron',sans-serif;}
+  body{
+    background:
+      radial-gradient(circle at 20% 10%, rgba(5,247,255,0.08), transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(255,0,128,0.10), transparent 45%),
+      linear-gradient(180deg,var(--bg-0),var(--bg-1) 60%,var(--bg-0));
+    min-height:100vh;
+    display:flex;
+    align-items:center;      /* respaldo para navegadores sin soporte de "safe" */
+    align-items:safe center; /* si el contenido (p.ej. la pantalla final con el
+                                 mini análisis) es más alto que la pantalla, no
+                                 lo corta arriba: cae a alineación normal */
+    justify-content:center;
+    padding:16px;
+  }
+  .screen{
+    width:100%;
+    max-width:960px;
+    display:none;
+  }
+  .screen.active{display:block;}
+
+  /* ---------- shared UI bits ---------- */
+  .panel{
+    background:linear-gradient(180deg,var(--panel),#0a0b13);
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.02), 0 20px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+  .neon-text{
+    color:var(--neon-cyan);
+    text-shadow:0 0 6px rgba(5,247,255,0.9), 0 0 18px rgba(5,247,255,0.5);
+  }
+  .neon-text-magenta{
+    color:var(--neon-magenta);
+    text-shadow:0 0 6px rgba(255,0,128,0.9), 0 0 18px rgba(255,0,128,0.5);
+  }
+  .btn{
+    font-family:'Orbitron',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--bg-0);
+    background:linear-gradient(180deg,var(--neon-cyan),#00b8c4);
+    border:none;
+    border-radius:8px;
+    padding:14px 28px;
+    cursor:pointer;
+    box-shadow:0 0 18px rgba(5,247,255,0.55), inset 0 -3px 0 rgba(0,0,0,0.25);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(5,247,255,0.8), inset 0 -3px 0 rgba(0,0,0,0.25);}
+  .btn:active{transform:translateY(0);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+  .btn-magenta{background:linear-gradient(180deg,var(--neon-magenta),#b8005c);box-shadow:0 0 18px rgba(255,0,128,0.55), inset 0 -3px 0 rgba(0,0,0,0.25);}
+  .btn-magenta:hover{box-shadow:0 0 28px rgba(255,0,128,0.8), inset 0 -3px 0 rgba(0,0,0,0.25);}
+  .btn-ghost{
+    background:transparent;
+    color:var(--text);
+    border:1px solid var(--border);
+    box-shadow:none;
+  }
+  .btn-ghost:hover{border-color:var(--neon-cyan);color:var(--neon-cyan);transform:none;box-shadow:0 0 12px rgba(5,247,255,0.25);}
+  input[type="text"]{
+    width:100%;
+    background:#08090f;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:14px 16px;
+    color:var(--text);
+    font-family:'Rajdhani',sans-serif;
+    font-size:17px;
+    font-weight:600;
+    outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  input[type="text"]:focus{border-color:var(--neon-cyan);box-shadow:0 0 12px rgba(5,247,255,0.35);}
+  input.invalid{border-color:var(--neon-magenta);box-shadow:0 0 12px rgba(255,0,128,0.45);}
+  label{
+    display:block;
+    font-size:12px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    margin-bottom:8px;
+    font-weight:700;
+  }
+
+  /* ---------- start screen ---------- */
+  #screen-start .hero{
+    text-align:center;
+    padding:34px 24px 10px;
+  }
+  #screen-start .hero h1{
+    font-size:clamp(32px,6vw,54px);
+    margin:0;
+    letter-spacing:3px;
+  }
+  #screen-start .hero p{
+    color:var(--text-dim);
+    font-size:16px;
+    margin-top:8px;
+    letter-spacing:1px;
+  }
+  .stripe{
+    height:4px;
+    width:100%;
+    background:linear-gradient(90deg,transparent,var(--neon-cyan),var(--neon-magenta),transparent);
+    opacity:.8;
+    margin:18px 0 28px;
+  }
+  .form-wrap{padding:0 32px 32px;}
+  .field{margin-bottom:20px;}
+  .error-msg{
+    color:var(--neon-magenta);
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.5px;
+    margin-top:8px;
+    min-height:16px;
+  }
+  .difficulty-group{display:flex;gap:10px;flex-wrap:wrap;}
+  .diff-btn{
+    flex:1;min-width:110px;
+    background:#08090f;border:1px solid var(--border);border-radius:8px;
+    padding:12px 10px;color:var(--text);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14.5px;
+    letter-spacing:.3px;cursor:pointer;
+    transition:border-color .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .diff-btn:hover{border-color:var(--neon-cyan);}
+  .diff-btn.active{border-color:var(--neon-yellow);background:rgba(255,212,0,0.10);box-shadow:0 0 12px rgba(255,212,0,0.3);}
+  .diff-btn[data-diff="facil"].active{border-color:var(--neon-green);background:rgba(57,255,106,0.10);box-shadow:0 0 12px rgba(57,255,106,0.3);}
+  .diff-btn[data-diff="dificil"].active{border-color:var(--neon-magenta);background:rgba(255,0,128,0.10);box-shadow:0 0 12px rgba(255,0,128,0.3);}
+
+  #temasOverlay{
+    position:fixed;inset:0;background:rgba(2,2,8,0.82);
+    display:none;align-items:center;justify-content:center;
+    z-index:50;padding:16px;backdrop-filter:blur(3px);
+  }
+  #temasOverlay.active{display:flex;}
+  .temas-card{max-width:760px;}
+  .icon-close-btn{
+    background:transparent;border:none;color:var(--text-dim);
+    font-size:20px;cursor:pointer;line-height:1;padding:4px 6px;
+    transition:color .12s ease;
+  }
+  .icon-close-btn:hover{color:var(--neon-cyan);}
+  .topics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;}
+  .topic-card{
+    background:#0a0b13;border:1px solid var(--border);
+    border-top:3px solid var(--accent, var(--neon-cyan));
+    border-radius:10px;padding:16px;
+  }
+  .topic-card .topic-icon{
+    width:34px;height:34px;border-radius:8px;background:var(--accent, var(--neon-cyan));
+    color:#050508;display:flex;align-items:center;justify-content:center;
+    font-weight:900;font-size:17px;margin-bottom:10px;font-family:'Orbitron',sans-serif;
+  }
+  .topic-card h4{margin:0 0 8px;font-size:15px;letter-spacing:.3px;}
+  .topic-card p{margin:0;font-size:13px;color:var(--text-dim);line-height:1.5;}
+
+  .rules-box{
+    background:#08090f;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px 18px;
+    margin:22px 0;
+    font-size:14px;
+    color:var(--text-dim);
+    line-height:1.55;
+  }
+  .rules-box b{color:var(--text);}
+  .start-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;padding-top:6px;}
+
+  /* ---------- game screen ---------- */
+  #screen-game{max-width:1080px;}
+  .game-panel{padding:0;overflow:hidden;}
+  .hud-bar{
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    background:linear-gradient(180deg,#0a0b13,#060710);
+    border-bottom:1px solid var(--border);
+    padding:10px 18px;
+  }
+  .hud-pilot{
+    margin-right:auto;font-size:14px;font-weight:600;color:var(--text-dim);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;
+  }
+  .hud-pilot b{color:var(--text);}
+  .hud-item{display:flex;align-items:baseline;gap:5px;font-family:'Orbitron',sans-serif;white-space:nowrap;}
+  .hud-item .hud-icon{font-size:15px;font-family:'Rajdhani',sans-serif;}
+  .hud-item .hud-val{font-size:17px;font-weight:800;}
+  .hud-item .hud-unit{font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;}
+  .hud-item.speed .hud-val{color:var(--neon-cyan);}
+  .hud-item.hits .hud-val{color:#ff9d1f;}
+  .hud-item.pits .hud-val{color:var(--neon-yellow);}
+  .hud-item.ok .hud-val{color:var(--neon-green);}
+  .hud-item.bad .hud-val{color:var(--neon-magenta);}
+  .hud-item.time .hud-val{color:var(--neon-cyan);}
+  .hud-mute{
+    width:32px;height:32px;border-radius:50%;flex-shrink:0;
+    background:#10111c;border:1px solid var(--border);color:var(--neon-cyan);
+    font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+    transition:box-shadow .15s ease, transform .12s ease;
+  }
+  .hud-mute:hover{box-shadow:0 0 14px rgba(5,247,255,0.4);transform:translateY(-1px);}
+  .hud-mute.is-muted{color:var(--text-dim);}
+  .hud-volume{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .hud-volume input[type="range"]{
+    width:72px;height:4px;cursor:pointer;accent-color:var(--neon-cyan);
+    background:transparent;
+  }
+
+  .pit-progress-bar{
+    position:relative;
+    display:flex;justify-content:space-between;align-items:center;
+    background:#07080f;
+    border-bottom:1px solid var(--border);
+    padding:9px 22px;
+  }
+  .pit-progress-bar::before{
+    content:"";position:absolute;left:22px;right:22px;top:50%;height:2px;
+    background:var(--border);transform:translateY(-50%);z-index:0;
+  }
+  .pit-dot{
+    width:15px;height:15px;border-radius:50%;
+    background:#151726;border:2px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    font-size:0;font-weight:800;color:var(--text-dim);
+    position:relative;z-index:1;flex-shrink:0;
+  }
+  .pit-dot.done-ok{background:var(--neon-green);border-color:var(--neon-green);box-shadow:0 0 8px rgba(57,255,106,.7);}
+  .pit-dot.done-bad{background:var(--neon-magenta);border-color:var(--neon-magenta);box-shadow:0 0 8px rgba(255,0,128,.7);}
+  .pit-dot.current{border-color:var(--neon-yellow);box-shadow:0 0 8px rgba(255,212,0,.7);}
+
+  #canvasWrap{position:relative;line-height:0;}
+  #gameCanvas{display:block;width:100%;height:auto;aspect-ratio:900/520;background:#bfe6f5;}
+  .controls-hint{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:13px;
+    margin-top:10px;
+    letter-spacing:.5px;
+  }
+  .controls-hint kbd{
+    background:#12131f;border:1px solid var(--border);border-radius:4px;
+    padding:2px 7px;font-family:'Orbitron',sans-serif;font-size:11px;color:var(--neon-cyan);
+  }
+  #collisionFlash{
+    position:absolute;inset:0;pointer-events:none;
+    background:rgba(255,0,128,0.35);opacity:0;
+  }
+  #pauseOverlay{
+    position:absolute;inset:0;background:rgba(2,2,6,0.75);
+    display:none;align-items:center;justify-content:center;
+    flex-direction:column;gap:10px;
+    font-family:'Orbitron',sans-serif;letter-spacing:2px;
+  }
+
+  /* ---------- question modal ---------- */
+  #modalOverlay{
+    position:fixed;inset:0;background:rgba(2,2,8,0.82);
+    display:none;align-items:center;justify-content:center;
+    z-index:50;padding:16px;backdrop-filter:blur(3px);
+  }
+  #modalOverlay.active{display:flex;}
+  .modal-card{
+    width:100%;max-width:560px;
+    padding:0;
+    animation:pop .18s ease-out;
+  }
+  @keyframes pop{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .modal-head{
+    padding:18px 26px;
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .modal-head .pit-badge{
+    font-family:'Orbitron',sans-serif;font-weight:900;font-size:13px;
+    background:var(--neon-yellow);color:#1a1200;padding:6px 12px;border-radius:6px;
+    letter-spacing:1px;
+  }
+  .modal-head .topic-tag{font-size:12px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;}
+  .modal-body{padding:22px 26px 26px;}
+  .question-text{font-size:19px;font-weight:600;line-height:1.4;margin:0 0 20px;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .options.image-mode{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .option-btn{
+    text-align:left;
+    background:#0a0b13;
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:13px 16px;
+    color:var(--text);
+    font-family:'Rajdhani',sans-serif;
+    font-size:16.5px;
+    font-weight:700;
+    letter-spacing:.3px;
+    font-variant-numeric:tabular-nums;
+    cursor:pointer;
+    transition:border-color .12s ease, background .12s ease, transform .1s ease;
+  }
+  .option-btn.image-option{
+    display:flex;align-items:center;justify-content:center;
+    padding:10px;min-height:104px;
+  }
+  .option-btn.image-option svg{display:block;max-width:100%;}
+  .interval{
+    font-family:'Courier New', monospace;
+    font-weight:800;
+    letter-spacing:.5px;
+    display:inline-flex;
+    align-items:center;
+  }
+  .ival-bracket{
+    font-size:1.5em;
+    font-weight:900;
+    line-height:1;
+    padding:0 1px;
+  }
+  .ival-bracket.closed, .ival-num.closed, .ival-dot.closed{color:var(--neon-green);}
+  .ival-bracket.open, .ival-num.open, .ival-dot.open{color:var(--neon-yellow);}
+  .ival-dot{font-size:.8em;margin:0 1px;position:relative;top:-1px;}
+  .ival-comma{color:var(--text);margin-right:3px;}
+  .interval-legend{
+    display:flex;gap:18px;flex-wrap:wrap;
+    margin:-4px 0 14px;
+    font-size:12.5px;color:var(--text-dim);
+    font-family:'Rajdhani',sans-serif;letter-spacing:.3px;
+  }
+  .interval-legend .leg-item{display:inline-flex;align-items:center;gap:5px;}
+  .interval-legend .ival-dot{font-size:1.1em;top:0;}
+  .option-btn:hover:not(:disabled){border-color:var(--neon-cyan);background:#0d1420;}
+  .option-btn:disabled{cursor:default;}
+  .option-btn.correct{border-color:var(--neon-green);background:rgba(57,255,106,0.12);box-shadow:0 0 12px rgba(57,255,106,.35);}
+  .option-btn.wrong{border-color:var(--neon-magenta);background:rgba(255,0,128,0.12);box-shadow:0 0 12px rgba(255,0,128,.35);}
+  .modal-card.image-modal{max-width:620px;}
+  .feedback-row{
+    margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  }
+  .feedback-msg{font-weight:700;font-size:14px;letter-spacing:.5px;}
+  .feedback-msg.ok{color:var(--neon-green);}
+  .feedback-msg.bad{color:var(--neon-magenta);}
+
+  /* ---------- final screen ---------- */
+  #screen-final .final-head{
+    text-align:center;padding:36px 24px 6px;
+  }
+  #screen-final .final-head h2{font-size:clamp(26px,5vw,38px);margin:0;letter-spacing:2px;}
+  .final-body{padding:10px 32px 32px;}
+  .grade-wrap{
+    display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap;
+    margin:20px 0 30px;
+  }
+  .grade-circle{
+    width:170px;height:170px;border-radius:50%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    border:3px solid var(--neon-cyan);
+    box-shadow:0 0 30px rgba(5,247,255,.55), inset 0 0 20px rgba(5,247,255,.15);
+    background:#08090f;
+  }
+  .grade-circle .num{font-family:'Orbitron',sans-serif;font-size:46px;font-weight:900;}
+  .grade-circle .den{font-size:13px;color:var(--text-dim);letter-spacing:1px;}
+  .student-info{
+    display:flex;flex-direction:column;gap:6px;
+    font-size:15px;color:var(--text-dim);min-width:220px;
+  }
+  .student-info b{color:var(--text);font-size:17px;}
+  .stats-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:12px;margin-bottom:26px;
+  }
+  .stat-box{padding:14px;text-align:center;}
+  .stat-box .v{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:800;}
+  .stat-box .l{font-size:11px;letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase;margin-top:4px;}
+  .review-section{text-align:left;margin-bottom:26px;}
+  .review-title{font-size:16px;margin:0 0 14px;letter-spacing:.5px;}
+  .review-item{
+    background:#0a0b13;border:1px solid var(--border);border-left:3px solid var(--neon-magenta);
+    border-radius:8px;padding:14px 16px;margin-bottom:10px;
+  }
+  .review-item .r-topic{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:5px;}
+  .review-item .r-q{font-weight:700;margin-bottom:8px;line-height:1.4;}
+  .review-item .r-line{font-size:14px;line-height:1.6;}
+  .review-item .r-your{color:var(--neon-magenta);font-weight:700;}
+  .review-item .r-correct{color:var(--neon-green);font-weight:700;}
+  .review-item .r-explain{
+    margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);
+    font-size:13.5px;color:var(--text-dim);line-height:1.5;
+  }
+  .final-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding-top:6px;}
+  .save-msg{
+    text-align:center;font-size:13px;color:var(--neon-green);margin-top:14px;min-height:16px;font-weight:700;letter-spacing:.5px;
+  }
+
+  footer.note{
+    text-align:center;color:var(--text-dim);font-size:11px;margin-top:18px;letter-spacing:1px;opacity:.6;
+  }
+  @media(max-width:640px){
+    .form-wrap{padding:0 18px 24px;}
+    .final-body{padding:10px 16px 24px;}
+    .hud-bar{padding:8px 12px;gap:10px;}
+    .hud-pilot{max-width:120px;font-size:12px;}
+    .hud-item .hud-val{font-size:14px;}
+    .hud-item .hud-unit{display:none;}
+    .pit-progress-bar{padding:8px 12px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- =============================================================== -->
+<!-- SCREEN 1: START / REGISTRATION                                    -->
+<!-- =============================================================== -->
+<section id="screen-start" class="screen active">
+  <div class="panel">
+    <div class="hero">
+      <h1 class="font-display neon-text">CALC<span class="neon-text-magenta">RACER</span></h1>
+      <p>Circuito de Cálculo Multivariable · Evaluación en pista · UTS</p>
+    </div>
+    <div class="stripe"></div>
+    <div class="form-wrap">
+      <div class="field">
+        <label for="studentName">Nombre del Estudiante</label>
+        <input type="text" id="studentName" placeholder="Ej. Ana Torres" autocomplete="off">
+        <div class="error-msg" id="errName"></div>
+      </div>
+      <div class="field">
+        <label for="studentCourse">Curso / Grupo</label>
+        <input type="text" id="studentCourse" placeholder="Ej. Cálculo III - Grupo 2" autocomplete="off">
+        <div class="error-msg" id="errCourse"></div>
+      </div>
+
+      <div class="field">
+        <label>Dificultad de las preguntas</label>
+        <div class="difficulty-group" id="difficultyGroup">
+          <button type="button" class="diff-btn" data-diff="facil">🟢 Fácil</button>
+          <button type="button" class="diff-btn active" data-diff="intermedio">🟡 Intermedio</button>
+          <button type="button" class="diff-btn" data-diff="dificil">🔴 Difícil</button>
+        </div>
+      </div>
+
+      <div class="rules-box">
+        <b>Cómo se juega:</b> mueve el auto con <b>← →</b> o <b>A / D</b> entre los 3 carriles, esquiva conos
+        y manchas de aceite. Cada colisión reduce tu velocidad. A lo largo de la pista encontrarás
+        <b>10 Pits</b>: al entrar se detiene la carrera y debes responder una pregunta de Cálculo
+        Multivariable (funciones multivariables, dominio y rango, gráficas y curvas/superficies de nivel).
+        Cada respuesta correcta suma <b>1.0 punto</b> sobre una nota final de <b>10.0</b>.
+      </div>
+
+      <div class="start-actions">
+        <button class="btn" id="btnStart">🏁 Iniciar Carrera</button>
+        <button type="button" class="btn btn-ghost" id="btnTemas">📚 Temas</button>
+      </div>
+    </div>
+  </div>
+  <footer class="note">CalcRacer · Juego educativo · Cálculo Multivariable</footer>
+</section>
+
+<!-- =============================================================== -->
+<!-- SCREEN 2: GAME                                                     -->
+<!-- =============================================================== -->
+<section id="screen-game" class="screen">
+  <div class="panel game-panel">
+    <div class="hud-bar">
+      <div class="hud-pilot">🏎️ <b id="hudName">-</b></div>
+      <div class="hud-item speed"><span class="hud-icon">⚡</span><span class="hud-val" id="hudSpeed">0</span><span class="hud-unit">km/h</span></div>
+      <div class="hud-item hits"><span class="hud-icon">💥</span><span class="hud-val" id="hudCollisions">0</span></div>
+      <div class="hud-item pits"><span class="hud-icon">🏁</span><span class="hud-val" id="hudPitFrac">0/10</span></div>
+      <div class="hud-item ok"><span class="hud-icon">✅</span><span class="hud-val" id="hudCorrect">0</span></div>
+      <div class="hud-item bad"><span class="hud-icon">❌</span><span class="hud-val" id="hudWrong">0</span></div>
+      <div class="hud-item time"><span class="hud-icon">⏱️</span><span class="hud-val" id="hudTime">0</span><span class="hud-unit">s</span></div>
+      <div class="hud-volume">
+        <button id="btnMute" class="hud-mute" title="Silenciar / activar sonido del motor">🔊</button>
+        <input type="range" id="volumeSlider" min="0" max="100" value="55" title="Volumen del motor">
+      </div>
+    </div>
+    <div class="pit-progress-bar" id="pitTrack"></div>
+    <div id="canvasWrap">
+      <canvas id="gameCanvas" width="900" height="520"></canvas>
+      <div id="collisionFlash"></div>
+      <div id="pauseOverlay"><div class="neon-text font-display">PIT STOP</div></div>
+    </div>
+  </div>
+  <div class="controls-hint">Mueve con <kbd>←</kbd> <kbd>→</kbd> o <kbd>A</kbd> <kbd>D</kbd> · Esquiva conos y aceite</div>
+</section>
+
+<!-- =============================================================== -->
+<!-- SCREEN 3: FINAL REPORT                                             -->
+<!-- =============================================================== -->
+<section id="screen-final" class="screen">
+  <div class="panel">
+    <div class="final-head">
+      <h2 class="font-display neon-text">🏆 CARRERA FINALIZADA</h2>
+      <p style="color:var(--text-dim);">Reporte de evaluación · Cálculo Multivariable</p>
+    </div>
+    <div class="final-body">
+      <div class="grade-wrap">
+        <div class="grade-circle">
+          <div class="num neon-text" id="finalGradeNum">0.0</div>
+          <div class="den">/ 10.0</div>
+        </div>
+        <div class="student-info">
+          <div><b id="finalName">-</b></div>
+          <div id="finalCourse">-</div>
+          <div id="finalDifficulty">-</div>
+          <div id="finalDate">-</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="panel stat-box"><div class="v neon-text" id="statCorrect">0</div><div class="l">Correctas</div></div>
+        <div class="panel stat-box"><div class="v" id="statWrong" style="color:var(--neon-magenta);">0</div><div class="l">Incorrectas</div></div>
+        <div class="panel stat-box"><div class="v" id="statCollisions">0</div><div class="l">Colisiones</div></div>
+        <div class="panel stat-box"><div class="v" id="statPercent">0%</div><div class="l">Desempeño</div></div>
+      </div>
+
+      <div class="review-section" id="reviewSection" style="display:none;">
+        <h3 class="review-title">📋 Mini análisis de tus respuestas</h3>
+        <div id="reviewList"></div>
+      </div>
+
+      <div class="final-actions">
+        <button class="btn" id="btnDownloadPdf">⬇ Descargar PDF</button>
+        <button class="btn btn-ghost" id="btnDownloadTxt">⬇ Descargar TXT</button>
+        <button class="btn btn-magenta" id="btnRestart">🔄 Reiniciar Juego</button>
+      </div>
+      <div class="save-msg" id="saveMsg">Resultado guardado automáticamente en el historial local.</div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== -->
+<!-- TEMAS MODAL                                                        -->
+<!-- =============================================================== -->
+<div id="temasOverlay">
+  <div class="panel modal-card temas-card">
+    <div class="modal-head">
+      <span class="pit-badge" style="background:var(--neon-cyan);">📚 TEMAS DEL CURSO</span>
+      <button class="icon-close-btn" id="btnCloseTemas" aria-label="Cerrar" type="button">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="topics-grid">
+        <div class="topic-card" style="--accent:var(--neon-cyan);">
+          <div class="topic-icon">ƒ</div>
+          <h4>Funciones multivariables</h4>
+          <p>Funciones que dependen de dos o más variables independientes, como f(x,y), y cómo evaluarlas en un punto.</p>
+        </div>
+        <div class="topic-card" style="--accent:var(--neon-green);">
+          <div class="topic-icon">▭</div>
+          <h4>Dominio y Rango</h4>
+          <p>El conjunto de puntos (x,y) donde f está definida (cuidado con raíces, denominadores y logaritmos), y el conjunto de valores que puede tomar f(x,y).</p>
+        </div>
+        <div class="topic-card" style="--accent:var(--neon-magenta);">
+          <div class="topic-icon">◔</div>
+          <h4>Gráfica de f(x,y)</h4>
+          <p>La superficie en ℝ³ que forma una función de dos variables: planos, paraboloides, esferas, conos y sillas de montar.</p>
+        </div>
+        <div class="topic-card" style="--accent:var(--neon-yellow);">
+          <div class="topic-icon">◎</div>
+          <h4>Curvas y superficies de nivel</h4>
+          <p>Al fijar f(x,y) = k se obtiene una curva en el plano XY: puede ser circunferencia, elipse, parábola, hipérbola o recta.</p>
+        </div>
+        <div class="topic-card" style="--accent:var(--neon-orange);">
+          <div class="topic-icon">⬭</div>
+          <h4>Secciones Cónicas</h4>
+          <p>Completar el cuadrado para identificar circunferencias, elipses, parábolas e hipérbolas (y sus superficies cuádricas en 3D): centro, vértices, focos, asíntotas y directriz.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================================== -->
+<!-- QUESTION MODAL                                                     -->
+<!-- =============================================================== -->
+<div id="modalOverlay">
+  <div class="panel modal-card" id="modalCard">
+    <div class="modal-head">
+      <span class="pit-badge" id="modalPitBadge">PIT 1/10</span>
+      <span class="topic-tag" id="modalTopic">Tema</span>
+    </div>
+    <div class="modal-body">
+      <p class="question-text" id="modalQuestion">¿Pregunta?</p>
+      <div class="options" id="modalOptions"></div>
+      <div class="interval-legend" id="intervalLegend" style="display:none;">
+        <span class="leg-item"><span class="ival-dot closed">●</span> incluido</span>
+        <span class="leg-item"><span class="ival-dot open">○</span> no incluido</span>
+      </div>
+      <div class="feedback-row">
+        <span class="feedback-msg" id="modalFeedback"></span>
+        <button class="btn" id="btnContinue" style="display:none;">Continuar →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================================================================
+   BANCO DE PREGUNTAS (16 preguntas, 4 por tema)
+   ================================================================ */
+const QUESTION_BANK = [
+  // ---- Tema 1: Funciones multivariables ----
+  {
+    topic:"Funciones multivariables",
+    q:"¿Cuál de las siguientes expresiones representa correctamente una función de dos variables?",
+    options:["f(x) = x² + 5", "f(x,y) = x² + y²", "f(x,y,z,w) sin variable dependiente", "y = f(x) + g(x)"],
+    correct:1,
+    dificultad:"facil",
+    explain:"Una función de dos variables depende de x y de y a la vez, como f(x,y) = x² + y². f(x) solo depende de una variable, y una expresión sin variable dependiente no define una función."
+  },
+  {
+    topic:"Funciones multivariables",
+    q:"Si f(x,y) = x²y − 3y + 2x, ¿cuál es el valor de f(2, 1)?",
+    options:["3", "7", "5", "9"],
+    correct:2,
+    dificultad:"facil",
+    explain:"Sustituyendo x=2, y=1: x²y = (2)²(1) = 4; −3y = −3; 2x = 4. Sumando: 4 − 3 + 4 = 5."
+  },
+  {
+    topic:"Funciones multivariables",
+    q:"Una función f: ℝⁿ → ℝ que depende de más de una variable independiente se denomina:",
+    options:["Función implícita", "Función multivariable (o de varias variables)", "Función inversa", "Función periódica"],
+    correct:1,
+    dificultad:"facil",
+    explain:"Por definición, una función que toma varias variables independientes (x, y, z, ...) y entrega un solo valor real se llama función multivariable o de varias variables."
+  },
+  {
+    topic:"Funciones multivariables",
+    q:"Dado f(x,y,z) = xy + yz + xz, el valor de f(1,2,3) es:",
+    options:["11", "6", "14", "9"],
+    correct:0,
+    dificultad:"facil",
+    explain:"Sustituyendo x=1, y=2, z=3: xy=2, yz=6, xz=3. Sumando: 2 + 6 + 3 = 11."
+  },
+
+  // ---- Tema 2: Dominio y Rango ----
+  {
+    topic:"Dominio y Rango",
+    q:"El dominio de f(x,y) = √(x² + y² − 4) corresponde a:",
+    options:[
+      "El interior del círculo x² + y² = 4",
+      "Todos los puntos (x,y) tales que x² + y² ≥ 4 (exterior o borde de la circunferencia de radio 2)",
+      "Todo el plano ℝ²",
+      "Solo el eje x"
+    ],
+    correct:1,
+    dificultad:"facil",
+    explain:"Para que la raíz cuadrada sea real, el radicando no puede ser negativo: x² + y² − 4 ≥ 0, es decir x² + y² ≥ 4. Eso es el exterior (o el borde) de la circunferencia de radio 2, no su interior."
+  },
+  {
+    topic:"Dominio y Rango",
+    q:"¿Cuál es el dominio natural de f(x,y) = 1 / (x − y)?",
+    options:[
+      "Todo ℝ²",
+      "Solo los puntos donde x = y",
+      "Todos los (x,y) ∈ ℝ² excepto donde x = y",
+      "Solo el primer cuadrante"
+    ],
+    correct:2,
+    dificultad:"facil",
+    explain:"Una fracción no está definida cuando el denominador es 0. Aquí x − y = 0 exactamente cuando x = y, así que esos puntos se excluyen del dominio."
+  },
+  {
+    topic:"Dominio y Rango",
+    q:"El rango de f(x,y) = x² + y² es:",
+    options:["(−∞, ∞)", "[0, ∞)", "(0, ∞)", "[−1, 1]"],
+    correct:1,
+    dificultad:"facil",
+    explain:"x² + y² es una suma de cuadrados, así que nunca es negativa, y sí alcanza el valor 0 en el origen (0,0). Por eso el rango es [0, ∞) con corchete cerrado, no (0, ∞)."
+  },
+  {
+    topic:"Dominio y Rango",
+    q:"Para que f(x,y) = ln(x + y) esté definida, se requiere que:",
+    options:["x + y = 0", "x + y > 0", "x + y < 0", "x − y > 0"],
+    correct:1,
+    dificultad:"facil",
+    explain:"El logaritmo natural solo está definido para argumentos estrictamente positivos, por lo que se necesita x + y > 0."
+  },
+
+  // ---- Tema 3: Gráfica de función de dos variables ----
+  {
+    topic:"Gráfica de funciones de dos variables",
+    q:"La gráfica de f(x,y) = x² + y² en ℝ³ corresponde a:",
+    options:["Un plano inclinado", "Un paraboloide que abre hacia arriba", "Una esfera completa", "Un cono con vértice en el infinito"],
+    correct:1,
+    dificultad:"facil",
+    explain:"z = x² + y² crece en todas direcciones a partir del origen como una taza, formando un paraboloide circular que abre hacia arriba (no un plano, ni una esfera ni un cono)."
+  },
+  {
+    topic:"Gráfica de funciones de dos variables",
+    q:"La gráfica de una función lineal z = ax + by + c es siempre:",
+    options:["Una curva cerrada", "Un plano en ℝ³", "Un paraboloide", "Una superficie cónica"],
+    correct:1,
+    dificultad:"facil",
+    explain:"Una expresión lineal en x e y, z = ax + by + c, define siempre un plano en el espacio tridimensional."
+  },
+  {
+    topic:"Gráfica de funciones de dos variables",
+    q:"En general, la gráfica de una función z = f(x,y) es un subconjunto de:",
+    options:["ℝ¹", "ℝ²", "ℝ³", "ℝ⁴"],
+    correct:2,
+    dificultad:"facil",
+    explain:"Cada punto de la gráfica tiene tres coordenadas (x, y, z), así que la gráfica vive en el espacio tridimensional ℝ³."
+  },
+  {
+    topic:"Gráfica de funciones de dos variables",
+    q:"La gráfica de f(x,y) = √(1 − x² − y²) corresponde a:",
+    options:[
+      "Un plano horizontal",
+      "La mitad superior de una esfera de radio 1 centrada en el origen",
+      "Un cilindro infinito",
+      "Un paraboloide hiperbólico"
+    ],
+    correct:1,
+    dificultad:"facil",
+    explain:"Elevando al cuadrado: z² = 1 − x² − y², es decir x² + y² + z² = 1, la ecuación de una esfera de radio 1. Como z = √(...) ≥ 0, solo se obtiene la mitad superior."
+  },
+
+  // ---- Tema 4: Curvas y superficies de nivel ----
+  {
+    topic:"Curvas y superficies de nivel",
+    q:"Las curvas de nivel de f(x,y) = x² + y² para valores k > 0 son:",
+    options:["Rectas paralelas", "Circunferencias concéntricas de radio √k", "Parábolas", "Puntos aislados"],
+    correct:1,
+    dificultad:"facil",
+    explain:"Haciendo x² + y² = k se obtiene la ecuación de una circunferencia centrada en el origen de radio √k; para distintos valores de k > 0 son circunferencias concéntricas."
+  },
+  {
+    topic:"Curvas y superficies de nivel",
+    q:"Una curva de nivel de f(x,y) se obtiene al:",
+    options:[
+      "Derivar la función respecto a x",
+      "Hacer f(x,y) = k para una constante k y graficar en el plano xy",
+      "Integrar la función sobre todo el dominio",
+      "Calcular el límite de f cuando (x,y) tiende al infinito"
+    ],
+    correct:1,
+    dificultad:"facil",
+    explain:"Por definición, una curva de nivel es el conjunto de puntos (x,y) que cumplen f(x,y) = k para una constante k fija, graficado en el plano xy."
+  },
+  {
+    topic:"Curvas y superficies de nivel",
+    q:"Las superficies de nivel (en lugar de curvas de nivel) se utilizan para representar funciones de:",
+    options:["Una variable", "Dos variables", "Tres variables, f(x,y,z) = k", "Ninguna variable"],
+    correct:2,
+    dificultad:"facil",
+    explain:"Con tres variables independientes, la ecuación f(x,y,z) = k ya no traza una curva en el plano sino una superficie en el espacio; por eso se llaman superficies de nivel."
+  },
+  {
+    topic:"Curvas y superficies de nivel",
+    q:"Para f(x,y) = x + y, la curva de nivel correspondiente a k = 4 es:",
+    options:["La recta x + y = 4", "La circunferencia x² + y² = 4", "La parábola y = x² + 4", "El punto (4,4)"],
+    correct:0,
+    dificultad:"facil",
+    explain:"Haciendo f(x,y) = x + y = 4 se obtiene directamente la ecuación de una recta, no de una circunferencia ni una parábola."
+  }
+];
+
+/* ================================================================
+   ÍCONOS SVG para las preguntas de "seleccionar la imagen correcta"
+   (bocetos tipo libro de texto: superficies 3D y sus curvas de nivel)
+   ================================================================ */
+const SHAPE_SVGS = {
+  paraboloid: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="60" cy="28" rx="46" ry="15" fill="rgba(5,247,255,0.10)" stroke="#05f7ff" stroke-width="2.4"/>
+    <path d="M14,28 C22,68 98,68 106,28" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
+    <ellipse cx="60" cy="50" rx="26" ry="8" fill="none" stroke="#05f7ff" stroke-width="1.3" opacity="0.55"/>
+    <line x1="60" y1="28" x2="60" y2="66" stroke="#ff0080" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.75"/>
+  </svg>`,
+  plane: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10,66 L60,28 L110,46 L60,84 Z" fill="rgba(5,247,255,0.10)" stroke="#05f7ff" stroke-width="2.4"/>
+    <path d="M27,59 L77,38" stroke="#05f7ff" stroke-width="1.2" opacity="0.6"/>
+    <path d="M42,73 L92,52" stroke="#05f7ff" stroke-width="1.2" opacity="0.6"/>
+    <path d="M35,43 L60,73" stroke="#05f7ff" stroke-width="1.2" opacity="0.6"/>
+    <path d="M56,35 L81,64" stroke="#05f7ff" stroke-width="1.2" opacity="0.6"/>
+  </svg>`,
+  sphere: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14,68 A46,44 0 0 1 106,68" fill="rgba(5,247,255,0.10)" stroke="#05f7ff" stroke-width="2.4"/>
+    <ellipse cx="60" cy="68" rx="46" ry="13" fill="none" stroke="#05f7ff" stroke-width="2.2"/>
+    <path d="M33,66 A27,11 0 0 1 87,66" fill="none" stroke="#05f7ff" stroke-width="1.2" opacity="0.55"/>
+  </svg>`,
+  cone: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="60" cy="28" rx="42" ry="14" fill="rgba(5,247,255,0.10)" stroke="#05f7ff" stroke-width="2.4"/>
+    <path d="M18,28 L60,84 L102,28" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
+    <ellipse cx="60" cy="50" rx="24" ry="8" fill="none" stroke="#05f7ff" stroke-width="1.2" opacity="0.5"/>
+  </svg>`,
+  saddle: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12,50 C30,18 90,18 108,50" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
+    <path d="M12,50 C30,82 90,82 108,50" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
+    <path d="M60,12 C42,38 42,62 60,88" fill="none" stroke="#ff0080" stroke-width="1.8" opacity="0.8"/>
+    <path d="M60,12 C78,38 78,62 60,88" fill="none" stroke="#ff0080" stroke-width="1.8" opacity="0.8"/>
+  </svg>`,
+  circles: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="60" cy="50" r="12" fill="none" stroke="#05f7ff" stroke-width="2.2"/>
+    <circle cx="60" cy="50" r="24" fill="none" stroke="#05f7ff" stroke-width="2.2" opacity="0.75"/>
+    <circle cx="60" cy="50" r="36" fill="none" stroke="#05f7ff" stroke-width="2.2" opacity="0.5"/>
+    <circle cx="60" cy="50" r="2.6" fill="#ff0080"/>
+  </svg>`,
+  lines: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
+    <line x1="6" y1="82" x2="46" y2="12" stroke="#05f7ff" stroke-width="2.4"/>
+    <line x1="30" y1="88" x2="70" y2="18" stroke="#05f7ff" stroke-width="2.4" opacity="0.85"/>
+    <line x1="54" y1="92" x2="94" y2="22" stroke="#05f7ff" stroke-width="2.4" opacity="0.7"/>
+    <line x1="78" y1="92" x2="115" y2="28" stroke="#05f7ff" stroke-width="2.4" opacity="0.55"/>
+  </svg>`,
+  parabolas: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10,30 Q60,92 110,30" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
+    <path d="M14,12 Q60,68 106,12" fill="none" stroke="#05f7ff" stroke-width="2.4" opacity="0.75"/>
+    <path d="M22,-4 Q60,44 98,-4" fill="none" stroke="#05f7ff" stroke-width="2.4" opacity="0.55"/>
+  </svg>`,
+  hyperbolas: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60,2 C40,30 40,70 60,98" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
+    <path d="M60,2 C80,30 80,70 60,98" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
+    <path d="M8,50 C28,34 28,66 8,50" fill="none" stroke="#ff0080" stroke-width="2.2" opacity="0.8"/>
+    <path d="M112,50 C92,34 92,66 112,50" fill="none" stroke="#ff0080" stroke-width="2.2" opacity="0.8"/>
+  </svg>`
+};
+
+// nombres legibles de cada forma, para mostrarlos en el mini análisis final
+const SHAPE_LABELS = {
+  paraboloid:"Paraboloide (taza hacia arriba)",
+  plane:"Plano",
+  sphere:"Media esfera",
+  cone:"Cono",
+  saddle:"Silla de montar (paraboloide hiperbólico)",
+  circles:"Circunferencias concéntricas",
+  lines:"Rectas paralelas",
+  parabolas:"Parábolas",
+  hyperbolas:"Hipérbolas"
+};
+
+/* ================================================================
+   PREGUNTAS DE IMAGEN: seleccionar la gráfica / curvas de nivel
+   correcta en vez de una opción de texto (misma mecánica de pit)
+   ================================================================ */
+const IMAGE_QUESTION_BANK = [
+  {
+    type:"image",
+    topic:"Gráfica de funciones de dos variables",
+    q:"¿Cuál de las siguientes imágenes representa la gráfica de f(x,y) = x² + y²?",
+    options:["plane","paraboloid","saddle","sphere"],
+    correct:1,
+    dificultad:"facil",
+    explain:"z = x² + y² crece igual en todas las direcciones desde el origen, formando una superficie en forma de taza: un paraboloide."
+  },
+  {
+    type:"image",
+    topic:"Gráfica de funciones de dos variables",
+    q:"¿Cuál imagen representa la gráfica de un plano z = ax + by + c?",
+    options:["cone","sphere","plane","paraboloid"],
+    correct:2,
+    dificultad:"facil",
+    explain:"Una expresión lineal en x e y siempre define una superficie plana, sin curvatura."
+  },
+  {
+    type:"image",
+    topic:"Gráfica de funciones de dos variables",
+    q:"¿Cuál imagen representa la gráfica de f(x,y) = √(1 − x² − y²)?",
+    options:["cone","sphere","plane","saddle"],
+    correct:1,
+    dificultad:"facil",
+    explain:"Elevando al cuadrado se llega a x² + y² + z² = 1 (una esfera de radio 1); como z ≥ 0, es solo la mitad superior de esa esfera."
+  },
+  {
+    type:"image",
+    topic:"Gráfica de funciones de dos variables",
+    q:"¿Cuál imagen representa un paraboloide hiperbólico (silla de montar), f(x,y) = x² − y²?",
+    options:["paraboloid","sphere","saddle","plane"],
+    correct:2,
+    dificultad:"facil",
+    explain:"En esta superficie z sube en la dirección de x y baja en la dirección de y, creando la forma de silla de montar característica del paraboloide hiperbólico."
+  },
+  {
+    type:"image",
+    topic:"Gráfica de funciones de dos variables",
+    q:"¿Cuál imagen representa el cono z = √(x² + y²)?",
+    options:["sphere","paraboloid","cone","plane"],
+    correct:2,
+    dificultad:"facil",
+    explain:"z = √(x² + y²) crece de forma lineal (no cuadrática) al alejarse del origen, generando las líneas rectas de un cono en vez de la curva de un paraboloide."
+  },
+  {
+    type:"image",
+    topic:"Curvas y superficies de nivel",
+    q:"¿Cuál imagen representa las curvas de nivel de f(x,y) = x² + y² (para distintos k > 0)?",
+    options:["lines","circles","parabolas","hyperbolas"],
+    correct:1,
+    dificultad:"facil",
+    explain:"Haciendo x² + y² = k se obtiene la ecuación de una circunferencia de radio √k; para distintos k son circunferencias concéntricas."
+  },
+  {
+    type:"image",
+    topic:"Curvas y superficies de nivel",
+    q:"¿Cuál imagen representa las curvas de nivel de un plano f(x,y) = x + y?",
+    options:["circles","lines","hyperbolas","parabolas"],
+    correct:1,
+    dificultad:"facil",
+    explain:"x + y = k es la ecuación de una recta para cada valor de k, así que las curvas de nivel de un plano son rectas paralelas."
+  },
+  {
+    type:"image",
+    topic:"Curvas y superficies de nivel",
+    q:"¿Cuál imagen representa las curvas de nivel de f(x,y) = x² − y² (silla de montar)?",
+    options:["circles","parabolas","hyperbolas","lines"],
+    correct:2,
+    dificultad:"facil",
+    explain:"x² − y² = k es la ecuación de una hipérbola para k ≠ 0 (y de dos rectas cuando k = 0), típico de la silla de montar."
+  }
+];
+
+QUESTION_BANK.push(...IMAGE_QUESTION_BANK);
+
+/* ================================================================
+   PREGUNTAS CONTEXTUALIZADAS (dominio, rango, curvas de nivel)
+   Problemas de aplicación con escenarios reales (drones, antenas,
+   estructuras, cultivos, industria...), en dos niveles de dificultad:
+   intermedio y difícil. Las 24 preguntas anteriores quedan como "facil".
+   ================================================================ */
+const WORD_PROBLEM_QUESTION_BANK = [
+  // ---- Dominio ----
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un dron de inspección agrícola debe mantenerse dentro de un radio de 20 m desde la estación base para no perder el control de la señal. Si f(x,y) = √(400 − x² − y²) modela la altitud máxima segura en la posición (x,y), ¿cuál es el dominio de f?",
+    options:["x² + y² < 400", "x² + y² ≤ 400", "x² + y² ≥ 400", "x + y ≤ 400"],
+    correct:1,
+    explain:"El radicando debe ser ≥ 0: 400 − x² − y² ≥ 0, es decir x² + y² ≤ 400. Es el disco cerrado de radio 20 alrededor de la estación base."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"En una subestación eléctrica, la potencia transferida entre dos nodos con potenciales x e y se modela con f(x,y) = 500 / (x − y), que se indefine cuando ambos nodos tienen el mismo potencial. ¿Para qué valores de (x,y) está definida f?",
+    options:["x = y", "x > y", "x, y ≠ 0", "x ≠ y"],
+    correct:3,
+    explain:"El denominador no puede ser cero: x − y ≠ 0, es decir x ≠ y. Si ambos nodos tienen el mismo potencial no hay diferencia de voltaje y el modelo se indefine (división entre cero)."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un sensor de iluminación urbana solo entrega una lectura válida fuera de un radio de 1 m alrededor del poste de luz, con f(x,y) = ln(x² + y² − 1). ¿Cuál es el dominio de f?",
+    options:["x² + y² > 1", "x² + y² ≥ 1", "x² + y² < 1", "x² + y² ≠ 1"],
+    correct:0,
+    explain:"El argumento del logaritmo debe ser estrictamente mayor que 0: x² + y² − 1 > 0, es decir x² + y² > 1. Dentro del círculo de radio 1, o justo en su borde, la lectura no está definida."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"dificil",
+    q:"Un ingeniero calcula un índice de estabilidad estructural con f(x,y) = √(x − y) / (x + y), donde x es la carga sobre una columna y y la carga sobre una viga (toneladas). ¿Cuál es el dominio de f?",
+    options:["x ≥ y", "x > y y x + y ≠ 0", "x ≥ y y x + y ≠ 0", "x ≤ y y x + y ≠ 0"],
+    correct:2,
+    explain:"El radicando debe ser ≥ 0 (x ≥ y) y el denominador no puede ser cero (x + y ≠ 0); ambas condiciones deben cumplirse a la vez."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un sensor de humedad en un cultivo solo funciona correctamente por debajo de la sombra parabólica y = x² proyectada por una hilera de árboles, con f(x,y) = 1 / √(x² − y). ¿En qué región del campo la lectura es válida?",
+    options:["y ≤ x²", "y > x²", "y = x²", "y < x²"],
+    correct:3,
+    explain:"Como el radicando está en un denominador, debe ser estrictamente mayor que 0: x² − y > 0, es decir y < x², la región estrictamente por debajo de la parábola."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Una constructora modela la capacidad de carga de un lote con f(x,y) = ln(9 − x − y), donde x e y son las distancias a los linderos (decenas de metros) y el lote tiene una restricción total de 9 unidades combinadas. ¿Cuál es el dominio de f?",
+    options:["x + y ≤ 9", "x + y < 9", "x + y > 9", "x + y ≠ 9"],
+    correct:1,
+    explain:"El argumento del logaritmo debe ser mayor que 0: 9 − x − y > 0, es decir x + y < 9."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un software topográfico combina dos pendientes del terreno x e y con f(x,y) = √(xy), que solo es calculable si ambas pendientes apuntan en el mismo sentido. ¿En qué región del plano está definida f?",
+    options:["x ≥ 0 y y ≥ 0 solamente", "xy > 0", "xy ≥ 0 (x, y del mismo signo, o alguna es 0)", "x = y"],
+    correct:2,
+    explain:"El radicando debe ser ≥ 0: xy ≥ 0, lo que ocurre cuando x y y tienen el mismo signo (o alguna es 0) — primer y tercer cuadrante, incluyendo los ejes."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"En un valle topográfico limitado por y = x², un sensor de humedad mide f(x,y) = x / √(y − x²). ¿En qué región del terreno la lectura es válida?",
+    options:["y > x²", "y ≥ x²", "y < x²", "y ≠ x²"],
+    correct:0,
+    explain:"El radicando está en un denominador, así que debe ser estrictamente mayor que 0: y − x² > 0, es decir y > x², la región estrictamente por encima de la parábola (dentro del valle)."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"dificil",
+    q:"Un dron submarino mide la profundidad de un lago circular de 5 km de radio, pero pierde la señal por completo sobre un arrecife anular a 3 km del centro. El modelo es f(x,y) = √(25 − x² − y²) / (x² + y² − 9). ¿Cuál es el dominio completo de f?",
+    options:["x² + y² ≤ 25", "x² + y² ≤ 25 y x² + y² ≠ 9", "x² + y² < 25 y x² + y² ≠ 9", "9 ≤ x² + y² ≤ 25"],
+    correct:1,
+    explain:"Por la raíz, x² + y² ≤ 25 (dentro del lago); por el denominador, x² + y² ≠ 9 (fuera del arrecife). El dron puede medir en todo el lago excepto exactamente sobre el anillo del arrecife."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Una antena tiene un 'punto muerto' de señal exactamente a 2 km de la torre, donde f(x,y) = 1 / (x² + y² − 4) se indefine. ¿Cuál es el dominio de f?",
+    options:["x² + y² < 4", "x² + y² > 4", "x² + y² ≠ 2", "x² + y² ≠ 4"],
+    correct:3,
+    explain:"El denominador no puede ser cero: x² + y² − 4 ≠ 0, es decir x² + y² ≠ 4 (ojo: la circunferencia excluida tiene radio 2, ya que √4 = 2)."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un software estructural calcula la resistencia de una viga con f(x,y) = √(4 − x²) + y, donde x es la posición horizontal (limitada físicamente a −2 ≤ x ≤ 2) y y la altura de análisis, sin restricción. ¿Cuál es el dominio de f?",
+    options:["−2 ≤ x ≤ 2, y ∈ ℝ", "−2 ≤ x ≤ 2, y ≥ 0", "x ≤ 2, y ∈ ℝ", "x² ≤ 4, y² ≤ 4"],
+    correct:0,
+    explain:"Solo x está dentro de una raíz: 4 − x² ≥ 0 da −2 ≤ x ≤ 2. La variable y no aparece en ninguna raíz, denominador o logaritmo, así que es libre en todo ℝ."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un modelo de rendimiento agrícola combina agua x y fertilizante y (cantidades que no pueden ser negativas) con f(x,y) = √x + √y. ¿Cuál es el dominio de f?",
+    options:["x > 0 y y > 0", "x ≥ 0 o y ≥ 0", "x ≥ 0 y y ≥ 0", "x + y ≥ 0"],
+    correct:2,
+    explain:"Cada raíz exige su propio radicando ≥ 0 de forma independiente: x ≥ 0 y y ≥ 0 deben cumplirse simultáneamente (primer cuadrante cerrado)."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"dificil",
+    q:"En un proceso de combustión, la eficiencia se modela con f(x,y) = ln(x / y), donde x es el flujo de oxidante y y el de combustible (kg/s). ¿Cuál es el dominio matemático de f?",
+    options:["x > 0 y y > 0", "x ≠ 0 y y ≠ 0", "x > y, y ≠ 0", "(x > 0 y y > 0) o (x < 0 y y < 0)"],
+    correct:3,
+    explain:"El argumento del logaritmo debe ser positivo: x/y > 0, lo cual ocurre si numerador y denominador tienen el mismo signo. Ese es el dominio matemático completo; en la práctica, como oxidante y combustible son cantidades físicas, solo tiene sentido real la región x > 0, y > 0."
+  },
+
+  // ---- Rango ----
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un invernadero modela su temperatura con f(x,y) = 28 − x² − y², válida solo dentro del área circular de estudio x² + y² ≤ 25 (radio 5 m desde el centro de ventilación). ¿Cuál es el rango de temperaturas dentro de esa región?",
+    options:["(−∞, 28]", "[3, 28]", "[23, 28]", "[0, 25]"],
+    correct:1,
+    explain:"El máximo (28) ocurre en el centro, donde x²+y²=0. El mínimo ocurre en el borde del área permitida (x²+y²=25), dando f=28−25=3. Al ser continua, f toma todos los valores entre 3 y 28."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un plato satelital tiene intensidad de señal normalizada f(x,y) = 50 / (x² + y² + 1), máxima en el punto focal y decreciente sin apagarse nunca del todo. ¿Cuál es el rango de intensidad?",
+    options:["(0, 50]", "[0, 50]", "(0, ∞)", "(0, 25]"],
+    correct:0,
+    explain:"El denominador nunca baja de 1, así que el máximo de f es 50 (en el punto focal); al alejarse, f se acerca a 0 sin llegar nunca a valer exactamente 0."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Una app de mapas calcula la distancia en línea recta a una estación GPS con f(x,y) = √(x² + y²). ¿Cuál es el rango de distancias que puede reportar?",
+    options:["(0, ∞)", "(−∞, ∞)", "[0, ∞)", "[0, 1]"],
+    correct:2,
+    explain:"El mínimo de x²+y² es 0 (en la estación misma), dando f=0; al alejarse, la distancia crece sin límite. Una distancia nunca es negativa, pero sí puede ser exactamente 0."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un software estructural modela el estrés relativo de una placa con f(x,y) = x² + y² − 4x − 6y + 13. ¿Cuál es el rango de estrés en la placa?",
+    options:["[13, ∞)", "(−∞, 0]", "[−13, ∞)", "[0, ∞)"],
+    correct:3,
+    explain:"Completando cuadrados, f = (x−2)² + (y−3)², cuyo mínimo es 0 (en el punto (2,3)) y sin límite superior."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"dificil",
+    q:"Una planta industrial modela el rendimiento de un proceso químico con f(x,y) = −2x² − 2y² + 8x − 4y − 1, según dos parámetros de control x e y. ¿Cuál es el rango de rendimiento?",
+    options:["(−∞, 40]", "(−∞, 9]", "[9, ∞)", "(−∞, −1]"],
+    correct:1,
+    explain:"Completando cuadrados, f = −2(x−2)² − 2(y+1)² + 9, cuyo máximo es 9 (en (2,−1)); fuera de ese punto óptimo el rendimiento cae sin límite."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Una cúpula geodésica de radio 6 m tiene altura f(x,y) = √(36 − x² − y²), máxima en el centro y nula en el borde. ¿Cuál es el rango de alturas?",
+    options:["[0, 36]", "(0, 6]", "[0, 6]", "[−6, 6]"],
+    correct:2,
+    explain:"El máximo ocurre en el centro (0,0): f=√36=6. El mínimo ocurre en el borde x²+y²=36: f=0."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un paso de montaña en forma de silla de montar tiene diferencia de elevación f(x,y) = x² − y². ¿Cuál es el rango de esa diferencia?",
+    options:["(−∞, ∞)", "[0, ∞)", "(−∞, 0]", "[−1, 1]"],
+    correct:0,
+    explain:"Con y=0, f(x,0)=x² crece sin límite hacia +∞; con x=0, f(0,y)=−y² decrece sin límite hacia −∞. El rango es todo ℝ."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"dificil",
+    q:"La intensidad de señal de un router Wi-Fi decrece con la distancia según f(x,y) = 1 / (x² + y² + 1), sin llegar nunca exactamente a cero. ¿Cuál es el rango de intensidad?",
+    options:["[0, 1]", "(0, 1]", "(0, ∞)", "[1, ∞)"],
+    correct:1,
+    explain:"El denominador nunca baja de 1, así que el máximo de f es 1 (en el router mismo); al alejarse, f se acerca a 0 sin llegar nunca a serlo."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un tanque cónico invertido de radio 4 m y profundidad máxima 4 m se modela con f(x,y) = 4 − √(x² + y²) sobre su base circular. ¿Cuál es el rango de profundidad?",
+    options:["[−4, 4]", "(0, 4)", "[0, 16]", "[0, 4]"],
+    correct:3,
+    explain:"El máximo (4) ocurre en el centro; el mínimo (0) ocurre en el borde de la base, donde x²+y²=16."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un contaminante se dispersa desde un punto de emisión con concentración f(x,y) = e^(−(x² + y²)), máxima en el origen y decreciente sin llegar nunca a cero. ¿Cuál es el rango de concentración?",
+    options:["(0, 1]", "[0, 1]", "(0, ∞)", "[0, e]"],
+    correct:0,
+    explain:"El exponente −(x²+y²) es siempre ≤ 0 con máximo 0 en el origen, dando f=e⁰=1 como máximo; la exponencial nunca toma el valor 0."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Un modelo agrícola predice el rendimiento de un cultivo con f(x,y) = −(x − 3)² − 2(y + 1)² + 40, según desviaciones de las dosis óptimas de riego y nutrientes. ¿Cuál es el rango de rendimiento?",
+    options:["[40, ∞)", "(−∞, 3]", "(−∞, 40]", "[0, 40]"],
+    correct:2,
+    explain:"Ambos términos cuadráticos son ≤ 0, así que el máximo (40) ocurre exactamente en el punto óptimo (3,−1); alejarse de él reduce el rendimiento sin límite."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"dificil",
+    q:"Una torre de comunicaciones de 3 m de altura tiene cables tensores hasta puntos (x,y) del suelo, con longitud f(x,y) = √(x² + y² + 9). ¿Cuál es el rango de longitudes posibles?",
+    options:["[0, ∞)", "(3, ∞)", "[9, ∞)", "[3, ∞)"],
+    correct:3,
+    explain:"El radicando x²+y²+9 nunca baja de 9, así que la longitud mínima es √9=3 (anclaje justo en la base); al alejarse, la longitud crece sin límite."
+  },
+  {
+    topic:"Dominio y Rango", dificultad:"intermedio",
+    q:"Una lámpara sobre una mesa de trabajo ilumina con f(x,y) = 50 / (x² + y² + 2), máxima justo debajo de ella. ¿Cuál es el rango de intensidad lumínica?",
+    options:["(0, 50]", "(0, 25]", "[0, 25]", "[2, 25]"],
+    correct:1,
+    explain:"El denominador nunca baja de 2, así que el máximo de f es 50/2=25 (justo bajo la lámpara); al alejarse, f se acerca a 0 sin llegar a serlo."
+  },
+
+  // ---- Curvas y superficies de nivel ----
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
+    q:"En un invernadero con temperatura f(x,y) = x² + y², los técnicos quieren instalar un anillo de sensores exactamente en la curva de 25 °C. ¿Qué curva es y cuál es su ecuación?",
+    options:["Circunferencia: x² + y² = 25", "Elipse: x²/25 + y²/25 = 1", "Recta: x + y = 25", "Circunferencia: x² + y² = 5"],
+    correct:0,
+    explain:"Al igualar la función al nivel deseado, x² + y² = 25 es una circunferencia centrada en el origen de radio √25 = 5."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
+    q:"Un topógrafo modela la elevación de una colina con f(x,y) = x² + 4y². ¿Qué curva de nivel se forma a una elevación de 16?",
+    options:["Circunferencia: x² + y² = 16", "Elipse: x²/4 + y²/16 = 1", "Elipse: x²/16 + y²/4 = 1", "Parábola: y = 16 − x²"],
+    correct:2,
+    explain:"Igualando y dividiendo entre 16: x²/16 + y²/4 = 1, una elipse con semieje 4 en x y 2 en y — la colina sube más lento en x que en y."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
+    q:"Un dron de vigilancia debe mantener una separación vertical constante de 3 m sobre un terreno cuyo perfil es y = x². Con f(x,y) = y − x² (altura real menos elevación del terreno), ¿qué curva debe seguir la altura y del dron en función de x?",
+    options:["Parábola: y = x² − 3", "Circunferencia: x² + y² = 3", "Recta: y = 3x", "Parábola: y = x² + 3"],
+    correct:3,
+    explain:"Igualando f al nivel 3: y − x² = 3, es decir y = x² + 3 — la trayectoria del dron es el mismo perfil del terreno, desplazado 3 unidades hacia arriba."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"dificil",
+    q:"El esfuerzo relativo de una viga sometida a cargas cruzadas se modela como f(x,y) = x² − y² (tipo silla de montar). ¿Qué curva forman los puntos de esfuerzo igual a 4?",
+    options:["Elipse: x²/4 + y²/4 = 1", "Hipérbola: x²/4 − y²/4 = 1", "Circunferencia: x² + y² = 4", "Dos rectas: y = x, y = −x"],
+    correct:1,
+    explain:"Igualando y dividiendo entre 4: x²/4 − y²/4 = 1, una hipérbola con vértices en (±2,0) — típica de superficies tipo silla de montar."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
+    q:"El costo de fertilizar un campo con nitrógeno x y fósforo y (kg, ambos ≥ 0) es f(x,y) = 2x + 3y (miles de pesos). ¿Qué figura forman las combinaciones de costo igual a 12?",
+    options:["Parábola: y = 12 − 2x²", "Circunferencia: x² + y² = 12", "Recta: 2x + 3y = 12", "Hipérbola: xy = 12"],
+    correct:2,
+    explain:"Como f es lineal, su curva de nivel siempre es una recta: 2x + 3y = 12. Aun así, solo tiene sentido físico la porción de esa recta en el primer cuadrante (x≥0, y≥0), ya que ambas cantidades son físicas."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
+    q:"Un radar mide distancia con f(x,y) = √(x² + y²). ¿Qué curva marca el límite de cobertura efectiva a 7 km?",
+    options:["Circunferencia: x² + y² = 49", "Circunferencia: x² + y² = 7", "Elipse: x²/49 + y²/49 = 1", "Recta: x + y = 7"],
+    correct:0,
+    explain:"Igualando √(x²+y²)=7 y elevando al cuadrado ambos lados: x² + y² = 49 — una circunferencia de radio 7 (ojo con el error común de dejar el radio en 7)."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
+    q:"Una cúpula geodésica tiene altura f(x,y) = 9 − x² − y². ¿Qué curva forma el contorno donde la altura es de 5 m?",
+    options:["Circunferencia: x² + y² = 5", "Circunferencia: x² + y² = 14", "Elipse: x²/9 + y²/5 = 1", "Circunferencia: x² + y² = 4"],
+    correct:3,
+    explain:"Igualando 9 − x² − y² = 5 y despejando: x² + y² = 4, una circunferencia de radio 2 (más pequeña que la base, porque a mayor altura el contorno se acerca al centro)."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"dificil",
+    q:"Una fuente de calor industrial desplazada del centro se modela con f(x,y) = x² + y² − 6x + 9. ¿Qué curva forma la isoterma de nivel 16, y dónde está centrada?",
+    options:["Circunferencia x² + y² = 16, centrada en el origen", "Circunferencia (x − 3)² + y² = 16, centrada en (3, 0)", "Circunferencia (x + 3)² + y² = 16, centrada en (−3, 0)", "Elipse (x − 3)²/16 + y²/9 = 1"],
+    correct:1,
+    explain:"x²−6x+9 es el trinomio cuadrado perfecto (x−3)², así que f=(x−3)²+y². Igualando a 16: circunferencia de radio 4 centrada en (3,0), no en el origen."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"dificil",
+    q:"Una antena direccional irradia de forma elíptica y desplazada del origen, con f(x,y) = 4x² + y² − 8x + 4. ¿Qué curva de nivel forma su patrón de cobertura a nivel 16?",
+    options:["Elipse: (x − 1)²/4 + y²/16 = 1", "Circunferencia: (x − 1)² + y² = 16", "Elipse: (x − 1)²/16 + y²/4 = 1", "Hipérbola: (x − 1)²/4 − y²/16 = 1"],
+    correct:0,
+    explain:"Completando cuadrado en x: f = 4(x−1)² + y². Igualando a 16 y dividiendo entre 16: (x−1)²/4 + y²/16 = 1, una elipse centrada en (1,0), alargada en la dirección y."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
+    q:"La producción conjunta de dos máquinas se modela con f(x,y) = xy (horas x, y ≥ 0). ¿Qué curva forman las combinaciones que producen exactamente 6 unidades?",
+    options:["Recta: x + y = 6", "Circunferencia: x² + y² = 6", "Hipérbola: xy = 6", "Parábola: y = 6/x²"],
+    correct:2,
+    explain:"Igualando f al nivel: xy = 6, una hipérbola rectangular con asíntotas en los ejes. Como x, y son horas (cantidades físicas), en la práctica solo tiene sentido la rama del primer cuadrante."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
+    q:"Un pivote de riego distribuye agua de forma elíptica con f(x,y) = x²/4 + y²/9. ¿Qué curva delimita la zona de riego uniforme a nivel 4, y cuáles son sus semiejes?",
+    options:["Elipse x²/4 + y²/9 = 1, semiejes 2 y 3", "Elipse x²/16 + y²/36 = 1, semiejes 4 y 6", "Circunferencia x²+y²=4", "Elipse x²/8 + y²/18 = 1, semiejes ≈2.8 y ≈4.2"],
+    correct:1,
+    explain:"Igualando a 4 y dividiendo entre 4: x²/16 + y²/36 = 1, una elipse con semieje 4 en x y 6 en y."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
+    q:"Un reflector parabólico satelital tiene superficie f(x,y) = y² − 4x. ¿Qué curva forma su sección transversal en el nivel base (0)?",
+    options:["Circunferencia: x² + y² = 4", "Parábola: x² = 4y", "Recta: y = 4x", "Parábola: y² = 4x"],
+    correct:3,
+    explain:"Igualando a 0: y² − 4x = 0, es decir y² = 4x, la parábola que abre hacia la derecha y concentra las señales paralelas en un punto focal."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
+    q:"En un lago, la profundidad relativa (respecto a un punto de referencia desplazado) se modela con f(x,y) = x² + y² + 2x − 4y. ¿Qué curva forma la línea de profundidad −1, y dónde está centrada?",
+    options:["Circunferencia (x + 1)² + (y − 2)² = 4, centrada en (−1, 2)", "Circunferencia x² + y² = 1, centrada en el origen", "Circunferencia (x − 1)² + (y + 2)² = 4, centrada en (1, −2)", "Elipse (x+1)²/4 + (y−2)²/5 = 1"],
+    correct:0,
+    explain:"Completando cuadrados: f=(x+1)²+(y−2)²−5. Igualando a −1: (x+1)²+(y−2)²=4, circunferencia de radio 2 centrada en (−1,2), no en el origen."
+  },
+  {
+    topic:"Curvas y superficies de nivel", dificultad:"dificil",
+    q:"Entre dos puntos de anclaje eléctrico, la tensión relativa se modela con f(x,y) = x² − y² + 2y. ¿Qué curva forma el patrón de tensión en el nivel 3, y qué tipo de cónica es?",
+    options:["Elipse: x² + (y − 1)² = 2", "Circunferencia: x² + (y − 1)² = 3", "Hipérbola: x² − (y − 1)² = 2", "Hipérbola: x² − (y + 1)² = 2"],
+    correct:2,
+    explain:"Completando cuadrado en y: f = x² − (y−1)² + 1. Igualando a 3: x² − (y−1)² = 2, una hipérbola centrada en (0,1), típica de sistemas con dos focos opuestos."
+  }
+];
+
+QUESTION_BANK.push(...WORD_PROBLEM_QUESTION_BANK);
+
+/* ================================================================
+   BANCO DE PREGUNTAS: SECCIONES CÓNICAS Y SUPERFICIES CUÁDRICAS
+   (completar cuadrados, identificar centro/vértices/focos/asíntotas/
+   directriz, superficies cuádricas en 3D, y aplicaciones reales)
+   ================================================================ */
+const CONIC_QUESTION_BANK = [
+  {
+    topic:"Secciones Cónicas", dificultad:"facil",
+    q:"Al completar el cuadrado en x² + y² − 6x + 8y + 9 = 0, ¿qué tipo de sección cónica se obtiene?",
+    options:["Circunferencia", "Elipse", "Hipérbola", "Parábola"],
+    correct:0,
+    explain:"Completando cuadrados: (x−3)² + (y+4)² = 16. Como ambos términos cuadráticos tienen el mismo coeficiente y signo, es una circunferencia (centro (3,−4), radio 4)."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"facil",
+    q:"La ecuación 4x² + 9y² = 36 representa...",
+    options:["Una elipse", "Una circunferencia", "Una hipérbola", "Una parábola"],
+    correct:0,
+    explain:"Dividiendo entre 36: x²/9 + y²/4 = 1. Los denominadores son distintos (9≠4), así que es una elipse, no una circunferencia."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"facil",
+    q:"¿Cuál es la diferencia clave, en la ecuación canónica, entre una elipse y una hipérbola?",
+    options:["La hipérbola tiene un signo menos entre los términos cuadráticos", "La elipse siempre tiene un semieje negativo", "La hipérbola no tiene centro definido", "La elipse solo existe en el espacio 3D"],
+    correct:0,
+    explain:"Elipse: x²/a² + y²/b² = 1 (suma). Hipérbola: x²/a² − y²/b² = 1 (resta). Ese signo menos es lo que abre las dos ramas."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"facil",
+    q:"La ecuación (x − 2)² = 12(y + 1) representa...",
+    options:["Una parábola vertical", "Una elipse", "Una hipérbola", "Una circunferencia"],
+    correct:0,
+    explain:"La forma (x−h)² = 4p(y−k) corresponde a una parábola que abre hacia arriba o abajo (vertical), con vértice en (h,k)=(2,−1)."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"facil",
+    q:"En el espacio, la ecuación x² + y² + z² = 25 representa...",
+    options:["Una esfera de radio 5", "Un paraboloide", "Un cono", "Un plano"],
+    correct:0,
+    explain:"Es la ecuación estándar de una esfera centrada en el origen con radio √25 = 5."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"facil",
+    q:"En una antena satelital con forma de parábola, ¿qué representa físicamente el foco?",
+    options:["El punto donde se concentran las señales reflejadas por el plato", "El punto más alejado del plato", "El borde exterior del plato", "El centro geométrico de la Tierra"],
+    correct:0,
+    explain:"Por la propiedad reflectora de la parábola, todo rayo paralelo al eje que llega al plato se refleja hacia el foco, donde se coloca el receptor."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"intermedio",
+    q:"Una elipse tiene vértices en (2, 5) y (2, −3), y focos en (2, 3) y (2, −1). ¿Cuál es la longitud de su eje mayor (2a)?",
+    options:["8", "4", "6", "10"],
+    correct:0,
+    explain:"La distancia entre los vértices es |5−(−3)| = 8, y esa distancia es precisamente 2a, la longitud del eje mayor."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"intermedio",
+    q:"Para la parábola (y + 1)² = 8(x − 2), ¿cuál es la ecuación de su directriz?",
+    options:["x = 0", "x = 4", "y = 0", "x = −2"],
+    correct:0,
+    explain:"4p=8 → p=2. El vértice está en (2,−1) y abre hacia la derecha, así que la directriz es una recta vertical a la izquierda del vértice: x = 2 − 2 = 0."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"intermedio",
+    q:"Al completar el cuadrado en 4x² − y² − 8x − 4y − 4 = 0, ¿cuáles son las coordenadas del centro de la hipérbola resultante?",
+    options:["(1, −2)", "(−1, 2)", "(2, −1)", "(1, 2)"],
+    correct:0,
+    explain:"Agrupando: 4(x²−2x) − (y²+4y) = 4 → 4(x−1)² − (y+2)² = 4. El centro de la hipérbola es (1, −2)."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"intermedio",
+    q:"La ecuación x² − y² − z = 0 corresponde a una superficie cuádrica llamada...",
+    options:["Paraboloide hiperbólico (silla de montar)", "Paraboloide elíptico", "Elipsoide", "Esfera"],
+    correct:0,
+    explain:"Al despejar z = x² − y², la mezcla de un término positivo y uno negativo genera la clásica superficie de silla de montar."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"intermedio",
+    q:"Un puente colgante tiene forma parabólica: sus torres miden 80 pies de alto, están separadas 400 pies, y el cable toca la carretera en el punto medio. Tomando el vértice en el origen, ¿cuál es la ecuación de la parábola?",
+    options:["x² = 500y", "x² = 320y", "y² = 500x", "x² = 125y"],
+    correct:0,
+    explain:"Cada torre está a x=200 del vértice, con altura y=80. Usando x²=4py: 200²=4p(80) → 40000=320p → 4p=500, así que x²=500y."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"intermedio",
+    q:"¿Cuál es la excentricidad de cualquier circunferencia?",
+    options:["0", "1", "Mayor que 1", "No está definida"],
+    correct:0,
+    explain:"La excentricidad mide qué tan 'alargada' es una cónica. Como en la circunferencia c=0 (los focos coinciden con el centro), e = c/a = 0."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"intermedio",
+    q:"En una elipse, si el semieje mayor es a = 5 y la distancia focal es c = 3, ¿cuánto vale el semieje menor b?",
+    options:["4", "2", "8", "6"],
+    correct:0,
+    explain:"Por la relación b² = a² − c²: b² = 25 − 9 = 16, así que b = 4."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"intermedio",
+    q:"Una galería susurrante (sala elíptica) tiene semieje mayor de 25 pies y semieje menor de 20 pies. ¿A qué distancia del centro deben ubicarse las dos personas (en los focos) para que el susurro de una se escuche claramente en la otra?",
+    options:["15 pies", "5 pies", "45 pies", "20 pies"],
+    correct:0,
+    explain:"c² = a² − b² = 25² − 20² = 625 − 400 = 225, así que c = 15 pies: esa es la distancia del centro a cada foco."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"dificil",
+    q:"Dos estaciones de radio (sistema tipo LORAN) están separadas 260 millas. Un barco detecta una diferencia de distancias a las estaciones de 100 millas, ubicándose sobre una rama de hipérbola. ¿Cuál es el valor de 'a' (semieje transverso) de esa hipérbola?",
+    options:["50", "100", "130", "30"],
+    correct:0,
+    explain:"En una hipérbola, la diferencia de distancias a los focos es constante e igual a 2a. Como 2a = 100, entonces a = 50."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"dificil",
+    q:"Al completar el cuadrado en x² + y² + z² + 4x − 6y + 2z − 2 = 0, ¿qué superficie se obtiene y cuál es su radio?",
+    options:["Esfera de radio 4", "Esfera de radio 16", "Elipsoide con semieje 8", "Esfera de radio 2"],
+    correct:0,
+    explain:"(x+2)² + (y−3)² + (z+1)² = 4 + 9 + 1 + 2 = 16. Como 16 = 4², es una esfera de radio 4."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"dificil",
+    q:"Un satélite orbita en una elipse cuyo perigeo (punto más cercano) está a 300 km de altura y cuyo apogeo (punto más lejano) está a 3000 km de altura sobre un planeta de radio 6000 km, con el foco en el centro del planeta. ¿Cuál es la longitud del eje mayor (2a) de la órbita?",
+    options:["15300 km", "12600 km", "9300 km", "6300 km"],
+    correct:0,
+    explain:"Distancia al perigeo desde el centro: 6000+300=6300 km. Distancia al apogeo: 6000+3000=9000 km. El eje mayor es la suma de ambas: 2a = 6300+9000 = 15300 km."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"dificil",
+    q:"Para la hipérbola (x − 1)²/9 − (y + 2)²/16 = 1, ¿cuál es la pendiente de sus asíntotas?",
+    options:["±4/3", "±3/4", "±16/9", "±9/16"],
+    correct:0,
+    explain:"Con eje transverso horizontal, las asíntotas tienen pendiente ±b/a. Aquí a²=9 (a=3) y b²=16 (b=4), entonces la pendiente es ±4/3."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"dificil",
+    q:"Si una hipérbola tiene a = 6 y c = 10, ¿cuál es su excentricidad?",
+    options:["5/3", "3/5", "5/6", "6/5"],
+    correct:0,
+    explain:"La excentricidad es e = c/a = 10/6 = 5/3. En toda hipérbola e > 1, lo cual concuerda (5/3 ≈ 1.67)."
+  },
+  {
+    topic:"Secciones Cónicas", dificultad:"dificil",
+    q:"Al completar el cuadrado en 2x² + y² − 8x + 4y + 2 = 0, ¿qué tipo de cónica resulta?",
+    options:["Elipse, con semiejes √10 y √5", "Hipérbola, con semiejes √10 y √5", "Elipse, con semiejes 10 y 5", "Circunferencia de radio √10"],
+    correct:0,
+    explain:"Agrupando: 2(x−2)² + (y+2)² = 10 → (x−2)²/5 + (y+2)²/10 = 1. Ambos términos suman (no restan) y tienen denominadores distintos: es una elipse con semiejes √10 y √5."
+  }
+];
+
+QUESTION_BANK.push(...CONIC_QUESTION_BANK);
+
+/* ================================================================
+   MÚSICA AMBIENTAL (sintetizada con Web Audio API, sin archivos
+   externos: funciona incluso sin conexión y no depende de licencias)
+   ================================================================ */
+const AudioEngine = (function(){
+  // Motor sintetizado: dos osciladores de sierra ligeramente desafinados
+  // (para el "batido" mecánico) cuyo tono/volumen sigue el régimen del auto,
+  // más un lecho de ruido de rodadura/viento que crece con la velocidad.
+  // Nada de música de fondo: todo el sonido reacciona a lo que pasa en pista.
+  const DUCK_FACTOR = 0.22; // volumen del motor mientras el juego está en pausa (pit)
+
+  let ctx=null, masterGain=null;
+  let engineFilter=null, engineGain=null, osc1=null, osc2=null;
+  let noiseSource=null, noiseFilter=null, noiseGain=null;
+  let running=false, muted=false, duckFactor=1, rafId=null;
+  let targetRpm=0.12, currentRpm=0.12;
+  let masterVolume=0.55; // ajustable con el control deslizante del HUD
+
+  function makeNoiseBuffer(seconds){
+    const size = Math.floor(ctx.sampleRate*seconds);
+    const buffer = ctx.createBuffer(1, size, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<size;i++) data[i] = Math.random()*2-1;
+    return buffer;
+  }
+
+  function ensureContext(){
+    if(ctx) return true;
+    try{
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return false;
+      ctx = new AC();
+
+      masterGain = ctx.createGain();
+      masterGain.gain.value = 0;
+      masterGain.connect(ctx.destination);
+
+      // motor: filtro pasa-bajos que se abre con las revoluciones
+      engineFilter = ctx.createBiquadFilter();
+      engineFilter.type = "lowpass";
+      engineFilter.frequency.value = 700;
+      engineFilter.Q.value = 0.8;
+      engineFilter.connect(masterGain);
+
+      engineGain = ctx.createGain();
+      engineGain.gain.value = 0.001;
+      engineGain.connect(engineFilter);
+
+      osc1 = ctx.createOscillator();
+      osc1.type = "sawtooth";
+      osc1.frequency.value = 55;
+      osc2 = ctx.createOscillator();
+      osc2.type = "sawtooth";
+      osc2.frequency.value = 55.8; // pequeño desafine -> zumbido de motor real
+      const g1 = ctx.createGain(); g1.gain.value = 0.5;
+      const g2 = ctx.createGain(); g2.gain.value = 0.32;
+      osc1.connect(g1); g1.connect(engineGain);
+      osc2.connect(g2); g2.connect(engineGain);
+      osc1.start(); osc2.start();
+
+      // ruido de rodadura/viento, sube y se aclara con la velocidad
+      noiseSource = ctx.createBufferSource();
+      noiseSource.buffer = makeNoiseBuffer(2);
+      noiseSource.loop = true;
+      noiseFilter = ctx.createBiquadFilter();
+      noiseFilter.type = "bandpass";
+      noiseFilter.frequency.value = 1000;
+      noiseFilter.Q.value = 0.5;
+      noiseGain = ctx.createGain();
+      noiseGain.gain.value = 0;
+      noiseSource.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(masterGain);
+      noiseSource.start();
+
+      return true;
+    }catch(e){ ctx=null; return false; }
+  }
+
+  function tick(){
+    if(!running || !ctx) return;
+    currentRpm += (targetRpm - currentRpm) * 0.07;
+    const now = ctx.currentTime;
+    const freq = 46 + currentRpm*150; // ralentí ~46Hz -> alto régimen ~196Hz
+    osc1.frequency.setTargetAtTime(freq, now, 0.06);
+    osc2.frequency.setTargetAtTime(freq*1.014, now, 0.06);
+    engineFilter.frequency.setTargetAtTime(420 + currentRpm*2800, now, 0.09);
+    engineGain.gain.setTargetAtTime((0.20 + currentRpm*0.42) * duckFactor, now, 0.09);
+    noiseFilter.frequency.setTargetAtTime(700 + currentRpm*2200, now, 0.12);
+    noiseGain.gain.setTargetAtTime(currentRpm*0.10*duckFactor, now, 0.12);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function setVolume(v, rampSec){
+    if(!ctx || !masterGain) return;
+    const target = muted ? 0 : v;
+    masterGain.gain.cancelScheduledValues(ctx.currentTime);
+    masterGain.gain.setValueAtTime(masterGain.gain.value, ctx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(target, ctx.currentTime+(rampSec||0.6));
+  }
+
+  function start(){
+    if(running) return;
+    if(!ensureContext()) return;
+    running = true;
+    if(ctx.state === "suspended") ctx.resume();
+    setVolume(masterVolume, 1.2);
+    tick();
+  }
+
+  // apaga el sonido del motor por completo (se acabaron los pits / fin de carrera)
+  function stop(){
+    running = false;
+    if(rafId) cancelAnimationFrame(rafId);
+    setVolume(0, 0.9);
+  }
+
+  // r: 0 (detenido/ralentí) .. 1 (velocidad máxima)
+  function setSpeedRatio(r){ targetRpm = Math.max(0, Math.min(1, r)); }
+
+  // v: 0..1, volumen general elegido por el usuario (control deslizante)
+  function setMasterVolume(v){
+    masterVolume = Math.max(0, Math.min(1, v));
+    if(running) setVolume(masterVolume, 0.15);
+  }
+
+  function duck(){ duckFactor = DUCK_FACTOR; }   // pit / pausa: motor al ralentí de fondo
+  function unduck(){ duckFactor = 1; }
+
+  // golpe corto (cono/aceite): ráfaga de ruido filtrada, tipo impacto/patinada
+  function playImpact(type){
+    if(!ctx || muted) return;
+    const now = ctx.currentTime;
+    const dur = type === "cone" ? 0.30 : 0.45;
+    const buffer = makeNoiseBuffer(dur);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<data.length;i++) data[i] *= (1 - i/data.length);
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    const filt = ctx.createBiquadFilter();
+    filt.type = type === "cone" ? "highpass" : "bandpass";
+    filt.frequency.value = type === "cone" ? 850 : 450;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.55, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now+dur);
+    src.connect(filt); filt.connect(g); g.connect(masterGain);
+    src.start(now);
+  }
+
+  function toggleMute(){
+    muted = !muted;
+    if(ctx) setVolume(masterVolume, 0.3);
+    return muted;
+  }
+
+  return { start, stop, duck, unduck, toggleMute, setSpeedRatio, setMasterVolume, playImpact };
+})();
+
+const btnMute = document.getElementById("btnMute");
+const volumeSlider = document.getElementById("volumeSlider");
+volumeSlider.addEventListener("input", ()=>{
+  AudioEngine.setMasterVolume(volumeSlider.value / 100);
+});
+btnMute.addEventListener("click", ()=>{
+  const isMuted = AudioEngine.toggleMute();
+  btnMute.textContent = isMuted ? "🔇" : "🔊";
+  btnMute.classList.toggle("is-muted", isMuted);
+});
+
+/* ================================================================
+   ESTADO GLOBAL
+   ================================================================ */
+const state = {
+  studentName:"",
+  studentCourse:"",
+  difficulty:"intermedio", // "facil" | "intermedio" | "dificil" — elegida en el registro
+  totalPits:10,
+  currentPit:0,
+  correct:0,
+  wrong:0,
+  collisions:0,
+  usedQuestionIdx:[],
+  activeQuestionPool:[], // subconjunto de QUESTION_BANK filtrado por dificultad
+  pitResults:[], // {ok, topic, q, yourAnswer, correctAnswer, explain} por pit
+  running:false,
+  paused:false,
+  startTime:0
+};
+
+/* ================================================================
+   NAVEGACIÓN DE PANTALLAS
+   ================================================================ */
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+/* ================================================================
+   PANTALLA 1: VALIDACIÓN DE REGISTRO
+   ================================================================ */
+const inputName = document.getElementById("studentName");
+const inputCourse = document.getElementById("studentCourse");
+const errName = document.getElementById("errName");
+const errCourse = document.getElementById("errCourse");
+
+// selector de dificultad: elige de qué subconjunto del banco salen las
+// preguntas de los pits (facil = las 24 originales, intermedio/dificil =
+// los problemas de aplicación con contexto real)
+let selectedDifficulty = "intermedio";
+const difficultyGroup = document.getElementById("difficultyGroup");
+difficultyGroup.querySelectorAll(".diff-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    difficultyGroup.querySelectorAll(".diff-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedDifficulty = btn.dataset.diff;
+  });
+});
+
+// modal "Temas": solo informativo, se puede abrir desde la pantalla de inicio
+const btnTemas = document.getElementById("btnTemas");
+const temasOverlay = document.getElementById("temasOverlay");
+const btnCloseTemas = document.getElementById("btnCloseTemas");
+btnTemas.addEventListener("click", ()=> temasOverlay.classList.add("active"));
+btnCloseTemas.addEventListener("click", ()=> temasOverlay.classList.remove("active"));
+temasOverlay.addEventListener("click", e=>{
+  if(e.target === temasOverlay) temasOverlay.classList.remove("active");
+});
+
+document.getElementById("btnStart").addEventListener("click", ()=>{
+  let ok = true;
+  const nameVal = inputName.value.trim();
+  const courseVal = inputCourse.value.trim();
+
+  if(nameVal.length < 2){
+    errName.textContent = "Ingresa tu nombre completo.";
+    inputName.classList.add("invalid");
+    ok = false;
+  } else {
+    errName.textContent = "";
+    inputName.classList.remove("invalid");
+  }
+
+  if(courseVal.length < 2){
+    errCourse.textContent = "Ingresa el curso o grupo.";
+    inputCourse.classList.add("invalid");
+    ok = false;
+  } else {
+    errCourse.textContent = "";
+    inputCourse.classList.remove("invalid");
+  }
+
+  if(!ok) return;
+
+  state.studentName = nameVal;
+  state.studentCourse = courseVal;
+  state.difficulty = selectedDifficulty;
+  document.getElementById("hudName").textContent = nameVal;
+  AudioEngine.start(); // el clic cuenta como gesto del usuario y desbloquea el audio
+  startGame();
+});
+
+[inputName, inputCourse].forEach(el=>{
+  el.addEventListener("keydown", e=>{
+    if(e.key === "Enter") document.getElementById("btnStart").click();
+  });
+});
+
+/* ================================================================
+   BUILD PIT DOTS (HUD)
+   ================================================================ */
+function buildPitDots(){
+  const track = document.getElementById("pitTrack");
+  track.innerHTML = "";
+  for(let i=1;i<=state.totalPits;i++){
+    const d = document.createElement("div");
+    d.className = "pit-dot";
+    d.id = "pitDot"+i;
+    d.title = "Pit "+i;
+    track.appendChild(d);
+  }
+}
+
+function updatePitDots(){
+  for(let i=1;i<=state.totalPits;i++){
+    const d = document.getElementById("pitDot"+i);
+    d.classList.remove("current","done-ok","done-bad");
+    if(i-1 < state.pitResults.length){
+      d.classList.add(state.pitResults[i-1].ok ? "done-ok" : "done-bad");
+    } else if(i === state.currentPit+1){
+      d.classList.add("current");
+    }
+  }
+}
+
+/* ================================================================
+   MOTOR DEL JUEGO (CANVAS) — vista trasera pseudo-3D estilo arcade
+   ================================================================ */
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const CW = canvas.width;
+const CH = canvas.height;
+
+// --- geometría de perspectiva (carretera con punto de fuga) ---
+const HORIZON_Y = CH * 0.34;
+const ROAD_HALF_WIDTH_BOTTOM = CW * 0.30;
+const PERSPECTIVE_Z0 = 128;   // más bajo = las cosas "crecen" más rápido al acercarse (sensación de más velocidad)
+const MAX_VISIBLE_Z = 650;    // distancia máxima visible hacia adelante (más larga = aparecen antes, más tiempo de reacción)
+const LANE_OFFSETS = [-0.62, 0, 0.62]; // fracción del medio-ancho de la vía
+
+// --- curvas de la pista: sin esto, el auto se ve "pegado" sobre una cinta
+// transportadora recta. El desplazamiento crece hacia el horizonte y se
+// reduce a 0 justo en la posición del auto, como en una curva real.
+const CURVE_AMPLITUDE = CW * 0.42;
+const CURVE_FREQ = 0.0055;
+function curveOffsetAtT(t){
+  const depthFactor = (1-t)*(1-t);
+  return Math.sin(distance*CURVE_FREQ) * CURVE_AMPLITUDE * depthFactor;
+}
+function roadCenterXAtT(t){ return CW/2 + curveOffsetAtT(t); }
+
+function depthT(z){
+  z = Math.max(0, z);
+  return PERSPECTIVE_Z0 / (PERSPECTIVE_Z0 + z);
+}
+function screenYFromT(t){ return HORIZON_Y + (CH - HORIZON_Y) * t; }
+function roadHalfWidthFromT(t){ return ROAD_HALF_WIDTH_BOTTOM * t; }
+function laneScreenX(laneIdx, t){ return roadCenterXAtT(t) + LANE_OFFSETS[laneIdx] * roadHalfWidthFromT(t); }
+function hash01(n){ const x = Math.sin(n)*43758.5453; return x - Math.floor(x); }
+
+// --- proporciones coherentes del auto y obstáculos (t=1 = tamaño real) ---
+const carW = ROAD_HALF_WIDTH_BOTTOM * 0.80;
+const carH = carW * 0.62;
+const CAR_SCREEN_Y = CH - carH*0.30;
+
+const CONE_BASE = ROAD_HALF_WIDTH_BOTTOM * 0.24;
+const OIL_BASE_W = ROAD_HALF_WIDTH_BOTTOM * 0.44;
+const OIL_BASE_H = OIL_BASE_W * 0.42;
+
+const BUILDING_PALETTE = ["#c9a4dd","#f3c893","#9fd8d0","#e8a1a1","#a8c5e8","#f6e29b"];
+const TREE_PALETTE = ["#2f8f46","#3aa257","#276b39","#4caf6b"];
+
+// --- distancia / progreso de la carrera ---
+const DISTANCE_PER_PIT = 550; // ~15s por pit a velocidad base
+const TOTAL_DISTANCE = DISTANCE_PER_PIT * state.totalPits;
+
+let distance = 0;
+let baseSpeed = 4.4;
+let speed = baseSpeed;
+const maxSpeed = 7.5;
+const minSpeed = 1.6;
+
+let carLane = 1;             // 0,1,2
+let carOffset = LANE_OFFSETS[1];
+let targetOffset = carOffset;
+let carLean = 0;
+
+let obstacles = [];  // {lane, type, triggerDistance, resolved}
+let buildings = [];  // {side:-1|1, triggerDistance, color, baseW, baseH, lateral, windowSeed, hasAntenna}
+let trees = [];       // {side:-1|1, triggerDistance, color, canopyR, trunkH, lateral}
+let particles = [];
+
+let animFrameId = null;
+let lastSpawnDistance = 0;
+let nextPitAt = DISTANCE_PER_PIT;
+let collisionCooldown = 0;
+let laneChangeCooldown = 0;
+let shakeFrames = 0;
+let shakeMag = 0;
+let speedLineSeeds = null;
+
+function randomBuildingParams(b){
+  b.color = BUILDING_PALETTE[Math.floor(Math.random()*BUILDING_PALETTE.length)];
+  b.baseW = 46 + Math.random()*40;
+  b.baseH = 90 + Math.random()*170;
+  b.lateral = 0.15 + Math.random()*0.55;
+  b.windowSeed = Math.random()*1000;
+  b.hasAntenna = Math.random() < 0.30;
+  return b;
+}
+
+function randomTreeParams(tr){
+  tr.color = TREE_PALETTE[Math.floor(Math.random()*TREE_PALETTE.length)];
+  tr.canopyR = 9 + Math.random()*8;
+  tr.trunkH = 13 + Math.random()*9;
+  tr.lateral = 0.03 + Math.random()*0.11; // más cerca del borde de la vía que los edificios
+  return tr;
+}
+
+function initTrees(){
+  trees = [];
+  [-1,1].forEach(side=>{
+    let d = 22;
+    for(let i=0;i<13;i++){
+      const tr = randomTreeParams({side, triggerDistance:d});
+      trees.push(tr);
+      d += 28 + Math.random()*42;
+    }
+  });
+}
+
+function initBuildings(){
+  buildings = [];
+  [-1,1].forEach(side=>{
+    let d = 40;
+    for(let i=0;i<9;i++){
+      const b = randomBuildingParams({side, triggerDistance:d});
+      buildings.push(b);
+      d += 55 + Math.random()*70;
+    }
+  });
+}
+
+function resetGameVars(){
+  distance = 0;
+  speed = baseSpeed;
+  carLane = 1;
+  carOffset = LANE_OFFSETS[1];
+  targetOffset = carOffset;
+  carLean = 0;
+  obstacles = [];
+  particles = [];
+  lastSpawnDistance = 0;
+  nextPitAt = DISTANCE_PER_PIT;
+  collisionCooldown = 0;
+  laneChangeCooldown = 0;
+  state.currentPit = 0;
+  state.correct = 0;
+  state.wrong = 0;
+  state.collisions = 0;
+  state.usedQuestionIdx = [];
+  state.pitResults = [];
+  state.activeQuestionPool = QUESTION_BANK.filter(q => q.dificultad === state.difficulty);
+  if(state.activeQuestionPool.length === 0) state.activeQuestionPool = QUESTION_BANK; // respaldo por si acaso
+  initBuildings();
+  initTrees();
+}
+
+function startGame(){
+  resetGameVars();
+  buildPitDots();
+  updatePitDots();
+  state.startTime = performance.now();
+  updateHud();
+  showScreen("screen-game");
+  state.running = true;
+  state.paused = false;
+  document.getElementById("pauseOverlay").style.display = "none";
+  if(animFrameId) cancelAnimationFrame(animFrameId);
+  loop();
+}
+
+/* ---- controles ---- */
+window.addEventListener("keydown", e=>{
+  if(!state.running || state.paused) return;
+  if(e.key === "ArrowLeft" || e.key.toLowerCase() === "a"){ moveLane(-1); }
+  if(e.key === "ArrowRight" || e.key.toLowerCase() === "d"){ moveLane(1); }
+});
+
+function moveLane(dir){
+  if(laneChangeCooldown > 0) return;
+  const newLane = Math.max(0, Math.min(2, carLane + dir));
+  if(newLane !== carLane){
+    carLane = newLane;
+    targetOffset = LANE_OFFSETS[carLane];
+    laneChangeCooldown = 10;
+  }
+}
+
+/* ---- generación de obstáculos ---- */
+function maybeSpawnObstacle(){
+  if(distance - lastSpawnDistance < 110) return;
+  if(Math.random() < 0.05){
+    lastSpawnDistance = distance;
+    const lane = Math.floor(Math.random()*3);
+    const type = Math.random() < 0.55 ? "cone" : "oil";
+    obstacles.push({lane, type, triggerDistance: distance + MAX_VISIBLE_Z, resolved:false});
+  }
+}
+
+/* ---- update loop ---- */
+function update(){
+  if(laneChangeCooldown > 0) laneChangeCooldown--;
+  if(collisionCooldown > 0) collisionCooldown--;
+
+  // suavizado de carril + inclinación al girar (sensación de peso/3D)
+  const diff = targetOffset - carOffset;
+  carOffset += diff * 0.18;
+  const desiredLean = Math.max(-14, Math.min(14, (diff / 0.62) * 32));
+  carLean += (desiredLean - carLean) * 0.16;
+
+  // recuperación gradual de velocidad
+  if(speed < baseSpeed){
+    speed = Math.min(baseSpeed, speed + 0.02);
+  } else if(speed < maxSpeed){
+    speed = Math.min(maxSpeed, speed + 0.002);
+  }
+
+  distance += speed * 0.14;
+
+  // el "régimen del motor" sigue la velocidad real del auto
+  AudioEngine.setSpeedRatio((speed - minSpeed) / (maxSpeed - minSpeed));
+
+  // obstáculos: aparecen lejos y se acercan según la distancia recorrida
+  maybeSpawnObstacle();
+  if(collisionCooldown === 0){
+    obstacles.forEach(o=>{
+      if(o.resolved) return;
+      const z = o.triggerDistance - distance;
+      if(z <= 6){
+        o.resolved = true;
+        if(o.lane === carLane) onCollision(o.type);
+      }
+    });
+  }
+  obstacles = obstacles.filter(o => !o.resolved);
+
+  // edificios: se reciclan más adelante cuando quedan atrás de la cámara
+  buildings.forEach(b=>{
+    const z = b.triggerDistance - distance;
+    if(z < -80){
+      b.triggerDistance = distance + MAX_VISIBLE_Z + Math.random()*180;
+      randomBuildingParams(b);
+    }
+  });
+
+  // árboles del pasto: mismo reciclaje, más seguido por estar más cerca
+  trees.forEach(tr=>{
+    const z = tr.triggerDistance - distance;
+    if(z < -60){
+      tr.triggerDistance = distance + MAX_VISIBLE_Z + Math.random()*140;
+      randomTreeParams(tr);
+    }
+  });
+
+  // humito del escape (detalle de vida en el auto)
+  if(Math.random() < 0.28){
+    const csx = CW/2 + carOffset*ROAD_HALF_WIDTH_BOTTOM;
+    particles.push({
+      type:"smoke",
+      x: csx + (Math.random()-0.5)*carW*0.25,
+      y: CAR_SCREEN_Y + carH*0.30,
+      vx:(Math.random()-0.5)*0.5,
+      vy: 0.55 + Math.random()*0.35,
+      life:26, maxLife:26,
+      size: 3 + Math.random()*2.2,
+      color:"rgba(220,222,230,0.55)"
+    });
+  }
+
+  // partículas (choques y humo)
+  particles.forEach(p=>{ p.x += p.vx; p.y += p.vy; p.life -= 1; });
+  particles = particles.filter(p=>p.life>0);
+
+  // check llegada a pit
+  if(distance >= nextPitAt && state.currentPit < state.totalPits){
+    triggerPit();
+    return; // pausa el loop hasta cerrar el modal
+  }
+
+  updateHud();
+}
+
+function onCollision(type){
+  state.collisions++;
+  AudioEngine.playImpact(type);
+  speed = Math.max(minSpeed, speed - (type==="cone" ? 2.2 : 1.6));
+  collisionCooldown = 18;
+  shakeFrames = 14;
+  shakeMag = type === "cone" ? 9 : 6;
+
+  const flash = document.getElementById("collisionFlash");
+  flash.style.transition = "none";
+  flash.style.opacity = "0.6";
+  requestAnimationFrame(()=>{
+    flash.style.transition = "opacity .4s ease";
+    flash.style.opacity = "0";
+  });
+
+  const csx = CW/2 + carOffset*ROAD_HALF_WIDTH_BOTTOM;
+  for(let i=0;i<14;i++){
+    particles.push({
+      x: csx + (Math.random()-0.5)*carW,
+      y: CAR_SCREEN_Y - carH*0.2,
+      vx:(Math.random()-0.5)*4,
+      vy:-Math.random()*3-1,
+      life:24,
+      color: type==="cone" ? "#ffb020" : "#8892a8"
+    });
+  }
+}
+
+/* ---- render ---- */
+function draw(){
+  ctx.save();
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,CW,CH);
+  ctx.restore();
+
+  let shakeX=0, shakeY=0;
+  if(shakeFrames > 0){
+    const decay = shakeFrames/14;
+    shakeX = (Math.random()-0.5)*shakeMag*decay;
+    shakeY = (Math.random()-0.5)*shakeMag*0.6*decay;
+    shakeFrames--;
+  }
+
+  ctx.save();
+  ctx.translate(shakeX, shakeY);
+
+  drawSky();
+  drawMountains();
+  drawGround();
+  drawRoad();
+  drawScenery();
+  drawHaze();
+  drawPitGate();
+  drawObstacles();
+  drawParticles();
+
+  // el auto "vive": leve rebote de suspensión y vaivén que crecen con la
+  // velocidad, para que se sienta como algo que avanza y no una calcomanía fija
+  const speedFrac = (speed - minSpeed) / (maxSpeed - minSpeed);
+  const now = performance.now();
+  const carBobY = Math.sin(now*0.012 + distance*0.05) * (1.4 + speedFrac*2.4);
+  const carSwayX = Math.sin(now*0.007) * 0.8 * speedFrac;
+  drawCarRear(CW/2 + carOffset*ROAD_HALF_WIDTH_BOTTOM + carSwayX, CAR_SCREEN_Y + carBobY, carW, carH, carLean);
+
+  drawSpeedLines();
+
+  ctx.restore();
+
+  drawVignette();
+}
+
+// neblina/perspectiva atmosférica: funde el horizonte con el cielo para dar
+// sensación real de profundidad (los objetos lejanos "se pierden" un poco)
+function drawHaze(){
+  const hazeH = CH*0.16;
+  const g = ctx.createLinearGradient(0,HORIZON_Y-hazeH*0.3,0,HORIZON_Y+hazeH);
+  g.addColorStop(0,"rgba(205,234,246,0.55)");
+  g.addColorStop(1,"rgba(205,234,246,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,HORIZON_Y-hazeH*0.3,CW,hazeH*1.3);
+}
+
+// viñeta cinematográfica: oscurece un poco las esquinas para que la vista
+// se sienta más "de cámara" y menos plana
+function drawVignette(){
+  const g = ctx.createRadialGradient(CW/2,CH*0.46,CH*0.30,CW/2,CH*0.46,CH*0.82);
+  g.addColorStop(0,"rgba(0,0,0,0)");
+  g.addColorStop(1,"rgba(0,0,0,0.32)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,CW,CH);
+}
+
+function drawSky(){
+  const g = ctx.createLinearGradient(0,0,0,HORIZON_Y);
+  g.addColorStop(0,"#4fb3e8");
+  g.addColorStop(1,"#cdeaf6");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,CW,HORIZON_Y+2);
+
+  // sol
+  const sunX=CW*0.80, sunY=HORIZON_Y*0.36, sunR=CH*0.075;
+  const sunGlow = ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,sunR*2.4);
+  sunGlow.addColorStop(0,"rgba(255,246,200,0.9)");
+  sunGlow.addColorStop(1,"rgba(255,246,200,0)");
+  ctx.fillStyle = sunGlow;
+  ctx.beginPath(); ctx.arc(sunX,sunY,sunR*2.4,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = "#fff7d6";
+  ctx.beginPath(); ctx.arc(sunX,sunY,sunR,0,Math.PI*2); ctx.fill();
+
+  // nubes decorativas con leve desplazamiento
+  const shift = (distance*0.12) % (CW+200);
+  ctx.fillStyle = "rgba(255,255,255,0.92)";
+  drawCloud(((CW*0.20 - shift) % (CW+200) + (CW+200)) % (CW+200) - 100, HORIZON_Y*0.28, 42);
+  drawCloud(((CW*0.55 - shift*0.7) % (CW+200) + (CW+200)) % (CW+200) - 100, HORIZON_Y*0.50, 30);
+  drawCloud(((CW*0.88 - shift*0.45) % (CW+200) + (CW+200)) % (CW+200) - 100, HORIZON_Y*0.20, 26);
+}
+
+function drawCloud(x,y,s){
+  ctx.beginPath();
+  ctx.ellipse(x,y,s,s*0.55,0,0,Math.PI*2);
+  ctx.ellipse(x+s*0.7,y+s*0.08,s*0.68,s*0.40,0,0,Math.PI*2);
+  ctx.ellipse(x-s*0.7,y+s*0.10,s*0.58,s*0.36,0,0,Math.PI*2);
+  ctx.fill();
+}
+
+function drawMountains(){
+  const shift = (distance*0.012) % CW;
+  ctx.fillStyle = "rgba(110,145,185,0.32)";
+  drawHillShape(-shift, HORIZON_Y, CW*1.5, HORIZON_Y*0.5, 1);
+  ctx.fillStyle = "rgba(90,125,165,0.28)";
+  drawHillShape(-shift*0.6+90, HORIZON_Y, CW*1.3, HORIZON_Y*0.35, 2);
+}
+
+function drawHillShape(xOffset,baseY,spanW,peakH,seed){
+  ctx.beginPath();
+  ctx.moveTo(xOffset-120, baseY);
+  const peaks=6;
+  for(let i=0;i<=peaks;i++){
+    const x = xOffset-120 + (spanW/peaks)*i;
+    const y = baseY - (Math.sin(i*1.8+seed)*0.5+0.5)*peakH;
+    ctx.lineTo(x,y);
+  }
+  ctx.lineTo(xOffset-120+spanW, baseY);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawGround(){
+  const g = ctx.createLinearGradient(0,HORIZON_Y,0,CH);
+  g.addColorStop(0,"#8fd18a");
+  g.addColorStop(0.55,"#6fbd6e");
+  g.addColorStop(1,"#3f8a49");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,HORIZON_Y,CW,CH-HORIZON_Y);
+
+  // franjas de corte de césped (como un jardín recién cortado), con la
+  // misma perspectiva que el resto de la escena
+  const BANDS = 11;
+  const phase = (distance*0.045) % 1;
+  for(let i=-1;i<BANDS;i++){
+    const t0 = Math.min(1, Math.max(0, (i+phase)/BANDS));
+    const t1 = Math.min(1, Math.max(0, (i+0.5+phase)/BANDS));
+    if(t1<=0 || t0>=1) continue;
+    const y0 = screenYFromT(t0), y1 = screenYFromT(t1);
+    ctx.fillStyle = "rgba(255,255,255,0.06)";
+    ctx.fillRect(0, y0, CW, Math.max(1, y1-y0));
+  }
+
+  // sombra de contacto donde el pasto se junta con el asfalto
+  ctx.fillStyle = "rgba(0,0,0,0.16)";
+  ctx.fillRect(0, HORIZON_Y, CW, 3);
+}
+
+const ROAD_COLOR_TOP = [0x4d,0x4d,0x58];
+const ROAD_COLOR_BOTTOM = [0x2a,0x2a,0x33];
+
+function drawRoad(){
+  // cuerpo de la vía por bandas (permite que siga la curva en vez de ser
+  // un triángulo recto fijo)
+  const BODY_BANDS = 24;
+  for(let i=0;i<BODY_BANDS;i++){
+    const t0 = i/BODY_BANDS, t1 = (i+1)/BODY_BANDS;
+    const y0=screenYFromT(t0), y1=screenYFromT(t1);
+    const rw0=roadHalfWidthFromT(t0), rw1=roadHalfWidthFromT(t1);
+    const cx0=roadCenterXAtT(t0), cx1=roadCenterXAtT(t1);
+    ctx.beginPath();
+    ctx.moveTo(cx0-rw0,y0); ctx.lineTo(cx0+rw0,y0);
+    ctx.lineTo(cx1+rw1,y1); ctx.lineTo(cx1-rw1,y1);
+    ctx.closePath();
+    const f = (t0+t1)/2;
+    const r = Math.round(ROAD_COLOR_TOP[0]+(ROAD_COLOR_BOTTOM[0]-ROAD_COLOR_TOP[0])*f);
+    const g = Math.round(ROAD_COLOR_TOP[1]+(ROAD_COLOR_BOTTOM[1]-ROAD_COLOR_TOP[1])*f);
+    const b = Math.round(ROAD_COLOR_TOP[2]+(ROAD_COLOR_BOTTOM[2]-ROAD_COLOR_TOP[2])*f);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fill();
+  }
+
+  drawRoadTexture();
+
+  // franjas de borde (curbs) rojo/blanco, animadas con la distancia
+  const STRIPES = 16;
+  const phase = (distance*0.085) % 1;
+  for(let i=-1;i<STRIPES;i++){
+    const t0 = Math.min(1, Math.max(0, (i+phase)/STRIPES));
+    const t1 = Math.min(1, Math.max(0, (i+1+phase)/STRIPES));
+    if(t1<=0 || t0>=1) continue;
+    const color = (((i%2)+2)%2===0) ? "#e63946" : "#f1faee";
+    drawCurbSegment(t0,t1,color);
+  }
+
+  // líneas divisorias de carril (discontinuas, amarillas) — scroll rápido
+  // para reforzar la sensación de velocidad
+  const DASHES = 10;
+  const phase2 = (distance*0.13) % 1;
+  ctx.fillStyle = "#ffe066";
+  for(let i=-1;i<DASHES;i++){
+    const t0 = Math.min(1, Math.max(0, (i+phase2)/DASHES));
+    const t1 = Math.min(1, Math.max(0, (i+0.55+phase2)/DASHES));
+    if(t1<=0 || t0>=1) continue;
+    drawDashSegment(-0.31,t0,t1);
+    drawDashSegment( 0.31,t0,t1);
+  }
+}
+
+function drawRoadTexture(){
+  // juntas de dilatación del asfalto: da textura y refuerza la sensación de movimiento
+  const BANDS = 9;
+  const phase = (distance*0.05) % 1;
+  ctx.fillStyle = "rgba(0,0,0,0.11)";
+  for(let i=-1;i<BANDS;i++){
+    const t0 = Math.min(1, Math.max(0, (i+phase)/BANDS));
+    const t1 = Math.min(1, Math.max(0, (i+0.12+phase)/BANDS));
+    if(t1<=0 || t0>=1) continue;
+    const y0=screenYFromT(t0), y1=screenYFromT(t1);
+    const rw0=roadHalfWidthFromT(t0), rw1=roadHalfWidthFromT(t1);
+    const cx0=roadCenterXAtT(t0), cx1=roadCenterXAtT(t1);
+    ctx.beginPath();
+    ctx.moveTo(cx0-rw0,y0); ctx.lineTo(cx0+rw0,y0);
+    ctx.lineTo(cx1+rw1,y1); ctx.lineTo(cx1-rw1,y1);
+    ctx.closePath(); ctx.fill();
+  }
+}
+
+function drawSpeedLines(){
+  if(!speedLineSeeds){
+    speedLineSeeds = [];
+    for(let i=0;i<12;i++){
+      speedLineSeeds.push({ frac: Math.random(), start: 0.45+Math.random()*0.35 });
+    }
+  }
+  const intensity = Math.max(0, Math.min(1, (speed - baseSpeed*1.05) / (maxSpeed - baseSpeed*1.05)));
+  if(intensity <= 0.03) return;
+  ctx.save();
+  ctx.strokeStyle = `rgba(255,255,255,${(0.11*intensity).toFixed(3)})`;
+  ctx.lineWidth = 2;
+  const vpX = roadCenterXAtT(0.03), vpY = HORIZON_Y;
+  speedLineSeeds.forEach(s=>{
+    const endX = vpX + (s.frac-0.5)*CW*1.35;
+    const endY = CH*0.99;
+    const midX = vpX + (endX-vpX)*s.start;
+    const midY = vpY + (endY-vpY)*s.start;
+    ctx.beginPath();
+    ctx.moveTo(midX,midY);
+    ctx.lineTo(endX,endY);
+    ctx.stroke();
+  });
+  ctx.restore();
+}
+
+function drawCurbSegment(t0,t1,color){
+  const y0=screenYFromT(t0), y1=screenYFromT(t1);
+  const rw0=roadHalfWidthFromT(t0), rw1=roadHalfWidthFromT(t1);
+  const cx0=roadCenterXAtT(t0), cx1=roadCenterXAtT(t1);
+  const s0=Math.max(1.5,rw0*0.055), s1=Math.max(1.5,rw1*0.055);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(cx0-rw0,y0); ctx.lineTo(cx0-rw0-s0,y0);
+  ctx.lineTo(cx1-rw1-s1,y1); ctx.lineTo(cx1-rw1,y1);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(cx0+rw0,y0); ctx.lineTo(cx0+rw0+s0,y0);
+  ctx.lineTo(cx1+rw1+s1,y1); ctx.lineTo(cx1+rw1,y1);
+  ctx.closePath(); ctx.fill();
+}
+
+function drawDashSegment(off,t0,t1){
+  const y0=screenYFromT(t0), y1=screenYFromT(t1);
+  const rw0=roadHalfWidthFromT(t0), rw1=roadHalfWidthFromT(t1);
+  const cx0=roadCenterXAtT(t0), cx1=roadCenterXAtT(t1);
+  const w0=Math.max(1,rw0*0.045), w1=Math.max(1,rw1*0.045);
+  const x0=cx0+off*rw0, x1=cx1+off*rw1;
+  ctx.beginPath();
+  ctx.moveTo(x0-w0,y0); ctx.lineTo(x0+w0,y0);
+  ctx.lineTo(x1+w1,y1); ctx.lineTo(x1-w1,y1);
+  ctx.closePath(); ctx.fill();
+}
+
+// aclara (percent>0) u oscurece (percent<0) un color hex, para dar
+// sombreado de volumen a los edificios sin necesitar más de un color base
+function shadeColor(hex, percent){
+  const num = parseInt(hex.slice(1),16);
+  let r = (num>>16) + Math.round(2.55*percent);
+  let g = ((num>>8)&0xff) + Math.round(2.55*percent);
+  let b = (num&0xff) + Math.round(2.55*percent);
+  r = Math.max(0,Math.min(255,r));
+  g = Math.max(0,Math.min(255,g));
+  b = Math.max(0,Math.min(255,b));
+  return `rgb(${r},${g},${b})`;
+}
+
+// Edificios y árboles se dibujan juntos, ordenados de más lejos a más
+// cerca, para que se tapen entre sí correctamente sin importar cuál
+// de los dos arreglos pertenezcan.
+function drawScenery(){
+  const items = [];
+  buildings.forEach(b=>{
+    const z = b.triggerDistance - distance;
+    if(z <= MAX_VISIBLE_Z && z > -80) items.push({type:"building", obj:b, z});
+  });
+  trees.forEach(tr=>{
+    const z = tr.triggerDistance - distance;
+    if(z <= MAX_VISIBLE_Z && z > -60) items.push({type:"tree", obj:tr, z});
+  });
+  items.sort((a,b)=> b.z - a.z); // lejos primero
+
+  items.forEach(it=>{
+    const t = depthT(Math.max(0,it.z));
+    if(t < 0.06) return;
+    if(it.type === "building") drawOneBuilding(it.obj, t);
+    else drawOneTree(it.obj, t);
+  });
+}
+
+function drawOneBuilding(b,t){
+  const rw = roadHalfWidthFromT(t);
+  const groundY = screenYFromT(t);
+  const w = b.baseW*t, h = b.baseH*t;
+  const edgeX = roadCenterXAtT(t) + b.side*(rw + b.lateral*(CW*0.5)*t);
+  const x = b.side<0 ? edgeX - w : edgeX;
+
+  // sombra de contacto con el pasto (ancla el edificio al piso)
+  ctx.fillStyle = "rgba(0,0,0,0.18)";
+  ctx.beginPath();
+  ctx.ellipse(x+w/2, groundY+2*t, w*0.58, Math.max(1,h*0.035), 0,0,Math.PI*2);
+  ctx.fill();
+
+  // cuerpo con degradado de luz (más claro arriba, más oscuro abajo) para
+  // dar volumen en vez de un rectángulo plano de un solo color
+  const bodyGrad = ctx.createLinearGradient(0, groundY-h, 0, groundY);
+  bodyGrad.addColorStop(0, shadeColor(b.color, 20));
+  bodyGrad.addColorStop(0.55, b.color);
+  bodyGrad.addColorStop(1, shadeColor(b.color, -18));
+  ctx.fillStyle = bodyGrad;
+  ctx.fillRect(x, groundY-h, w, h);
+
+  // cara lateral en sombra (simula la cara del edificio que no recibe luz)
+  const sideW = Math.max(1, w*0.16);
+  ctx.fillStyle = "rgba(0,0,0,0.20)";
+  ctx.fillRect(x+w-sideW, groundY-h, sideW, h);
+
+  // remate del techo
+  ctx.fillStyle = shadeColor(b.color, -30);
+  ctx.fillRect(x, groundY-h, w, Math.max(1,h*0.035));
+
+  // antena en algunos edificios (variedad en el perfil de la ciudad)
+  if(b.hasAntenna && t > 0.35){
+    ctx.strokeStyle = "rgba(70,70,80,0.85)";
+    ctx.lineWidth = Math.max(1, w*0.025);
+    ctx.beginPath();
+    ctx.moveTo(x+w*0.5, groundY-h);
+    ctx.lineTo(x+w*0.5, groundY-h-h*0.16);
+    ctx.stroke();
+  }
+
+  // ventanas iluminadas
+  if(t > 0.30 && w>10 && h>16){
+    ctx.fillStyle = "rgba(255,238,160,0.85)";
+    const cols = Math.max(1,Math.floor(w/13));
+    const rows = Math.max(1,Math.floor(h/17));
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        if(hash01(b.windowSeed + r*13.1 + c*7.7) < 0.42) continue;
+        ctx.fillRect(x+4+c*12*t, groundY-h+6+r*15*t, 5*t, 7*t);
+      }
+    }
+  }
+}
+
+function drawOneTree(tr,t){
+  const rw = roadHalfWidthFromT(t);
+  const groundY = screenYFromT(t);
+  const cx = roadCenterXAtT(t);
+  const edgeX = cx + tr.side*(rw + tr.lateral*(CW*0.5)*t);
+  const trunkH = tr.trunkH*t, trunkW = Math.max(1,3*t);
+  const canopyR = tr.canopyR*t;
+  if(canopyR < 1.2) return;
+
+  // sombra de contacto
+  ctx.fillStyle = "rgba(0,0,0,0.18)";
+  ctx.beginPath();
+  ctx.ellipse(edgeX, groundY, canopyR*0.8, Math.max(1,canopyR*0.22), 0,0,Math.PI*2);
+  ctx.fill();
+
+  // tronco
+  ctx.fillStyle = "#5a3c22";
+  ctx.fillRect(edgeX-trunkW/2, groundY-trunkH, trunkW, trunkH);
+
+  // copa: tres círculos superpuestos para un contorno más orgánico
+  ctx.fillStyle = tr.color;
+  ctx.beginPath();
+  ctx.arc(edgeX, groundY-trunkH-canopyR*0.6, canopyR, 0, Math.PI*2);
+  ctx.arc(edgeX-canopyR*0.55, groundY-trunkH-canopyR*0.35, canopyR*0.72, 0, Math.PI*2);
+  ctx.arc(edgeX+canopyR*0.55, groundY-trunkH-canopyR*0.35, canopyR*0.72, 0, Math.PI*2);
+  ctx.fill();
+
+  // brillo (da volumen a la copa)
+  ctx.fillStyle = "rgba(255,255,255,0.20)";
+  ctx.beginPath();
+  ctx.arc(edgeX-canopyR*0.32, groundY-trunkH-canopyR*0.95, canopyR*0.4, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawPitGate(){
+  const z = nextPitAt - distance;
+  if(state.currentPit >= state.totalPits || z < 0 || z > MAX_VISIBLE_Z) return;
+  const t = depthT(z);
+  if(t < 0.10) return;
+  const rw = roadHalfWidthFromT(t);
+  const groundY = screenYFromT(t);
+  const cx = roadCenterXAtT(t);
+  const postH = 95*t, postW = 8*t;
+  const leftX = cx - rw*1.06, rightX = cx + rw*1.06;
+
+  ctx.fillStyle = "#333744";
+  ctx.fillRect(leftX-postW/2, groundY-postH, postW, postH);
+  ctx.fillRect(rightX-postW/2, groundY-postH, postW, postH);
+
+  const signH = 36*t;
+  const signY = groundY-postH-signH/2;
+  ctx.fillStyle = "#ff9d1f";
+  ctx.strokeStyle = "#7a3d00";
+  ctx.lineWidth = Math.max(1,2*t);
+  roundRectPath(leftX, signY, rightX-leftX, signH, 6*t);
+  ctx.fill(); ctx.stroke();
+
+  // franja de bandera a cuadros sobre el letrero (detalle de pista)
+  if(t > 0.22){
+    const checkH = Math.max(2, signH*0.24);
+    const checkW = checkH;
+    const stripW = rightX-leftX;
+    const count = Math.max(4, Math.floor(stripW/checkW));
+    const cw = stripW/count;
+    for(let i=0;i<count;i++){
+      ctx.fillStyle = i%2===0 ? "#101010" : "#f5f5f5";
+      ctx.fillRect(leftX + i*cw, signY-checkH, cw, checkH);
+    }
+  }
+
+  if(t > 0.30){
+    ctx.fillStyle = "#2b1400";
+    ctx.font = `700 ${Math.max(9,15*t)}px Orbitron, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`PIT ${state.currentPit+1}/${state.totalPits}`, cx, groundY-postH);
+  }
+}
+
+function drawObstacles(){
+  const withDepth = obstacles.map(o=>({o, z:o.triggerDistance-distance}))
+                              .filter(e=> e.z>=0 && e.z<=MAX_VISIBLE_Z)
+                              .sort((a,b)=> b.z - a.z);
+  withDepth.forEach(({o,z})=>{
+    const t = depthT(z);
+    if(t < 0.05) return;
+    const x = laneScreenX(o.lane,t);
+    const y = screenYFromT(t);
+    if(o.type === "cone"){ drawCone(x,y,CONE_BASE*t); }
+    else { drawOil(x,y,OIL_BASE_W*t,OIL_BASE_H*t); }
+  });
+}
+
+function drawParticles(){
+  particles.forEach(p=>{
+    const maxLife = p.maxLife || 24;
+    const lifeFrac = Math.max(0, p.life/maxLife);
+    ctx.globalAlpha = lifeFrac;
+    if(p.type === "smoke"){
+      const r = (p.size||3) * (1.5 - lifeFrac);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x-2,p.y-2,4,4);
+    }
+  });
+  ctx.globalAlpha = 1;
+}
+
+// Cono de tráfico con volumen real: cuerpo cónico con degradado de luz,
+// bandas reflectantes, base de goma con dos caras y sombra proyectada.
+function drawCone(x,y,size){
+  ctx.save();
+  ctx.translate(x,y);
+
+  const topY = -size, botY = size*0.42;
+  const topW = size*0.16, botW = size*0.62;
+
+  // sombra proyectada en el asfalto
+  ctx.fillStyle = "rgba(0,0,0,0.32)";
+  ctx.beginPath();
+  ctx.ellipse(size*0.05, botY*1.05, botW*1.05, size*0.16, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // base de goma (dos caras para dar sensación de bloque 3D)
+  const baseW = botW*2.15, baseH = size*0.22;
+  ctx.fillStyle = "#181818";
+  ctx.fillRect(-baseW/2, botY-baseH*0.15, baseW, baseH);
+  ctx.fillStyle = "#040404";
+  ctx.fillRect(-baseW/2, botY-baseH*0.15+baseH*0.55, baseW, baseH*0.5);
+
+  // cuerpo cónico (trapecio) con degradado que simula luz lateral
+  ctx.beginPath();
+  ctx.moveTo(-topW, topY);
+  ctx.lineTo( topW, topY);
+  ctx.lineTo( botW, botY);
+  ctx.lineTo(-botW, botY);
+  ctx.closePath();
+  const coneGrad = ctx.createLinearGradient(-botW,0,botW,0);
+  coneGrad.addColorStop(0,   "#9c3a00");
+  coneGrad.addColorStop(0.30,"#ff8a2e");
+  coneGrad.addColorStop(0.52,"#ffb56b");
+  coneGrad.addColorStop(0.76,"#ff7a1a");
+  coneGrad.addColorStop(1,   "#9c3a00");
+  ctx.fillStyle = coneGrad;
+  ctx.fill();
+
+  // bandas reflectantes blancas (siguiendo la perspectiva del cono)
+  const band = (f0,f1)=>{
+    const y0=topY+(botY-topY)*f0, y1=topY+(botY-topY)*f1;
+    const w0=topW+(botW-topW)*f0, w1=topW+(botW-topW)*f1;
+    ctx.beginPath();
+    ctx.moveTo(-w0,y0); ctx.lineTo(w0,y0);
+    ctx.lineTo(w1,y1); ctx.lineTo(-w1,y1);
+    ctx.closePath(); ctx.fill();
+  };
+  ctx.fillStyle = "rgba(255,255,255,0.95)";
+  band(0.28,0.40);
+  band(0.60,0.72);
+
+  // sombreado sutil del lado derecho para reforzar el volumen
+  ctx.fillStyle = "rgba(0,0,0,0.16)";
+  ctx.beginPath();
+  ctx.moveTo(topW*0.2, topY+(botY-topY)*0.04);
+  ctx.lineTo(botW, botY);
+  ctx.lineTo(botW*0.55, botY);
+  ctx.closePath();
+  ctx.fill();
+
+  // brillo superior (punta iluminada)
+  ctx.fillStyle = "rgba(255,255,255,0.35)";
+  ctx.beginPath();
+  ctx.ellipse(-topW*0.15, topY+size*0.05, topW*0.7, size*0.05, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// Mancha de aceite: charco de forma irregular (polígono suavizado, no una
+// elipse perfecta) con reflejo especular del cielo para dar sensación de líquido.
+const OIL_BLOB_POINTS = [
+  [1.00, 0.00],[0.90, 0.58],[0.44, 0.92],[-0.16, 0.98],
+  [-0.70, 0.68],[-1.00, 0.08],[-0.82,-0.58],[-0.30,-0.94],
+  [ 0.32,-0.90],[0.84,-0.54]
+];
+function drawOil(x,y,w,h){
+  ctx.save();
+  ctx.translate(x,y);
+
+  const blob = new Path2D();
+  OIL_BLOB_POINTS.forEach(([px,py],i)=>{
+    const X = px*w/2, Y = py*h/2;
+    if(i===0) blob.moveTo(X,Y); else blob.lineTo(X,Y);
+  });
+  blob.closePath();
+
+  const g = ctx.createRadialGradient(0,0,2,0,0,w/2);
+  g.addColorStop(0,"#3f3f4a");
+  g.addColorStop(0.65,"#1c1c22");
+  g.addColorStop(1,"#0a0a0d");
+  ctx.fillStyle = g;
+  ctx.fill(blob);
+  ctx.strokeStyle = "rgba(255,255,255,0.10)";
+  ctx.lineWidth = 1.2;
+  ctx.stroke(blob);
+
+  // reflejo especular (simula el cielo reflejado en el charco)
+  ctx.fillStyle = "rgba(215,235,255,0.32)";
+  ctx.beginPath();
+  ctx.ellipse(-w*0.12,-h*0.16,w*0.15,h*0.20,-0.3,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawWheel(x,y,w,h){
+  ctx.save();
+  ctx.translate(x,y);
+  const g = ctx.createLinearGradient(-w/2,0,w/2,0);
+  g.addColorStop(0,"#020202");
+  g.addColorStop(0.5,"#2e2e34");
+  g.addColorStop(1,"#020202");
+  ctx.fillStyle = g;
+  roundRectPath(-w/2,-h/2,w,h,w*0.32);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.fillRect(-w*0.12,-h*0.38,w*0.24,h*0.76);
+  ctx.restore();
+}
+
+// Auto visto DESDE ATRÁS (cámara persecutoria estilo arcade de carreras):
+// carrocería verde con "UTS" en el baúl, vidrio trasero, ruedas traseras
+// visibles a los lados, luces de freno con resplandor neón, e inclinación
+// (leanDeg) al cambiar de carril para reforzar la sensación de peso/3D.
+function drawCarRear(x,y,w,h,leanDeg){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate((leanDeg||0) * Math.PI/180);
+
+  // sombra
+  ctx.fillStyle = "rgba(0,0,0,0.38)";
+  ctx.beginPath();
+  ctx.ellipse(0,h*0.54,w*0.60,h*0.14,0,0,Math.PI*2);
+  ctx.fill();
+
+  // ruedas traseras asomando a los lados
+  drawWheel(-w*0.53,h*0.28,w*0.15,h*0.30);
+  drawWheel( w*0.53,h*0.28,w*0.15,h*0.30);
+
+  // carrocería (techo angosto arriba, paragolpes ancho abajo)
+  const topW = w*0.36, botW = w*0.50;
+  ctx.beginPath();
+  ctx.moveTo(-topW,-h/2);
+  ctx.lineTo( topW,-h/2);
+  ctx.lineTo( botW, h*0.42);
+  ctx.lineTo(-botW, h*0.42);
+  ctx.closePath();
+  const bodyGrad = ctx.createLinearGradient(-botW,0,botW,0);
+  bodyGrad.addColorStop(0,   "#0a3314");
+  bodyGrad.addColorStop(0.20,"#1c8a3c");
+  bodyGrad.addColorStop(0.5, "#3ee06a");
+  bodyGrad.addColorStop(0.80,"#1c8a3c");
+  bodyGrad.addColorStop(1,   "#0a3314");
+  ctx.fillStyle = bodyGrad;
+  ctx.fill();
+
+  // brillo superior
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  ctx.beginPath();
+  ctx.moveTo(-topW*0.7,-h/2+h*0.03);
+  ctx.lineTo( topW*0.7,-h/2+h*0.03);
+  ctx.lineTo( topW*0.4,-h*0.28);
+  ctx.lineTo(-topW*0.4,-h*0.28);
+  ctx.closePath();
+  ctx.fill();
+
+  // vidrio trasero
+  const glassTopW = topW*0.82, glassBotW = botW*0.5;
+  ctx.beginPath();
+  ctx.moveTo(-glassTopW,-h/2+h*0.05);
+  ctx.lineTo( glassTopW,-h/2+h*0.05);
+  ctx.lineTo( glassBotW,-h*0.05);
+  ctx.lineTo(-glassBotW,-h*0.05);
+  ctx.closePath();
+  const glassGrad = ctx.createLinearGradient(0,-h/2,0,-h*0.05);
+  glassGrad.addColorStop(0,"#0d2a18");
+  glassGrad.addColorStop(1,"#173d22");
+  ctx.fillStyle = glassGrad;
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.30)";
+  ctx.lineWidth = w*0.03;
+  ctx.beginPath();
+  ctx.moveTo(-glassTopW*0.4,-h*0.42);
+  ctx.lineTo( glassBotW*0.35,-h*0.12);
+  ctx.stroke();
+
+  // texto "UTS" en el baúl
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `900 ${Math.max(10,h*0.17)}px Orbitron, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.shadowColor = "rgba(0,0,0,0.35)";
+  ctx.shadowBlur = 2;
+  ctx.fillText("UTS", 0, h*0.16);
+  ctx.shadowBlur = 0;
+
+  // placa
+  ctx.fillStyle = "#eef1ff";
+  roundRectPath(-w*0.13, h*0.33, w*0.26, h*0.10, 2);
+  ctx.fill();
+  ctx.strokeStyle = "#8a8fb0";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // espejos laterales
+  ctx.fillStyle = "#0a3314";
+  ctx.fillRect(-topW-w*0.05,-h*0.30,w*0.06,h*0.07);
+  ctx.fillRect( topW-w*0.01,-h*0.30,w*0.06,h*0.07);
+
+  // alerón trasero (detalle deportivo, refuerza el look "racing")
+  ctx.fillStyle = "#0a3314";
+  roundRectPath(-topW*1.05, -h*0.58, topW*2.1, h*0.055, 2);
+  ctx.fill();
+  ctx.fillStyle = "#1c8a3c";
+  ctx.fillRect(-topW*0.55, -h*0.52, w*0.05, h*0.09);
+  ctx.fillRect( topW*0.50, -h*0.52, w*0.05, h*0.09);
+
+  // luces de freno (neón)
+  ctx.shadowColor="#ff2d2d"; ctx.shadowBlur=12;
+  ctx.fillStyle="#ff2d2d";
+  ctx.fillRect(-botW*0.92, h*0.08, botW*0.30, h*0.15);
+  ctx.fillRect( botW*0.62, h*0.08, botW*0.30, h*0.15);
+  ctx.shadowBlur=0;
+
+  // doble salida de escape
+  ctx.fillStyle = "#3a3a42";
+  roundRectPath(-botW*0.22, h*0.40, w*0.09, h*0.06, 2);
+  ctx.fill();
+  roundRectPath( botW*0.13, h*0.40, w*0.09, h*0.06, 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function roundRectPath(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+/* ---- hud ---- */
+function updateHud(){
+  document.getElementById("hudSpeed").textContent = Math.round(speed*38);
+  document.getElementById("hudCollisions").textContent = state.collisions;
+  document.getElementById("hudPitFrac").textContent = state.currentPit + "/" + state.totalPits;
+  document.getElementById("hudCorrect").textContent = state.correct;
+  document.getElementById("hudWrong").textContent = state.wrong;
+  const elapsed = state.startTime ? Math.max(0,Math.floor((performance.now()-state.startTime)/1000)) : 0;
+  document.getElementById("hudTime").textContent = elapsed;
+}
+
+/* ---- loop principal ---- */
+function loop(){
+  if(!state.running || state.paused) return;
+  update();
+  if(!state.running || state.paused) { draw(); return; }
+  draw();
+  animFrameId = requestAnimationFrame(loop);
+}
+
+/* ================================================================
+   SISTEMA DE PITS / PREGUNTAS
+   ================================================================ */
+function difficultyLabel(d){
+  return d === "facil" ? "🟢 Fácil" : d === "dificil" ? "🔴 Difícil" : "🟡 Intermedio";
+}
+function difficultyLabelPlain(d){
+  return d === "facil" ? "Fácil" : d === "dificil" ? "Difícil" : "Intermedio";
+}
+
+function pickQuestion(){
+  const pool = state.activeQuestionPool.length ? state.activeQuestionPool : QUESTION_BANK;
+  if(state.usedQuestionIdx.length >= pool.length){
+    state.usedQuestionIdx = []; // reciclar el pool de la dificultad elegida para rejugabilidad
+  }
+  let idx;
+  do{
+    idx = Math.floor(Math.random()*pool.length);
+  }while(state.usedQuestionIdx.includes(idx));
+  state.usedQuestionIdx.push(idx);
+  return {idx, data:pool[idx]};
+}
+
+function triggerPit(){
+  state.paused = true;
+  document.getElementById("pauseOverlay").style.display = "flex";
+  draw();
+  AudioEngine.duck();
+
+  const {idx, data} = pickQuestion();
+  openQuestionModal(idx, data);
+}
+
+const modalOverlay = document.getElementById("modalOverlay");
+const modalCard = document.getElementById("modalCard");
+const modalPitBadge = document.getElementById("modalPitBadge");
+const modalTopic = document.getElementById("modalTopic");
+const modalQuestion = document.getElementById("modalQuestion");
+const modalOptions = document.getElementById("modalOptions");
+const intervalLegend = document.getElementById("intervalLegend");
+const modalFeedback = document.getElementById("modalFeedback");
+const btnContinue = document.getElementById("btnContinue");
+
+// notación de intervalos ( [0,1] vs (0,1] ) es fácil de confundir si solo se
+// resaltan los símbolos: "[" y "(" se ven casi iguales a simple vista y en
+// movimiento (el juego corre contrarreloj). Por eso cada extremo se marca con
+// DOS señales redundantes: color (verde = incluido, amarillo = no incluido)
+// y forma (● punto relleno = incluido, ○ punto hueco = no incluido), igual
+// que se enseña a graficar en la recta numérica.
+function formatIntervalOption(text){
+  const m = /^([\(\[])\s*([^,]+?)\s*,\s*([^\)\]]+?)\s*([\)\]])$/.exec(text.trim());
+  if(!m) return null;
+  const [, open, left, right, close] = m;
+  const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const openClosed = open === "[";
+  const closeClosed = close === "]";
+  const dot = closed => `<span class="ival-dot ${closed?"closed":"open"}" aria-hidden="true">${closed?"●":"○"}</span>`;
+  return `<span class="interval">`
+    + `<span class="ival-bracket ${openClosed?"closed":"open"}">${esc(open)}</span>`
+    + dot(openClosed)
+    + `<span class="ival-num ${openClosed?"closed":"open"}">${esc(left)}</span>`
+    + `<span class="ival-comma">,</span> `
+    + `<span class="ival-num ${closeClosed?"closed":"open"}">${esc(right)}</span>`
+    + dot(closeClosed)
+    + `<span class="ival-bracket ${closeClosed?"closed":"open"}">${esc(close)}</span>`
+    + `</span>`;
+}
+
+function openQuestionModal(idx, data){
+  const isImage = data.type === "image";
+
+  modalPitBadge.textContent = `PIT ${state.currentPit+1}/${state.totalPits}`;
+  modalTopic.textContent = data.topic;
+  modalQuestion.textContent = data.q;
+  modalOptions.innerHTML = "";
+  modalOptions.className = "options" + (isImage ? " image-mode" : "");
+  modalCard.classList.toggle("image-modal", isImage);
+  modalFeedback.textContent = "";
+  btnContinue.style.display = "none";
+
+  let anyInterval = false;
+  data.options.forEach((opt, i)=>{
+    const b = document.createElement("button");
+    b.className = "option-btn" + (isImage ? " image-option" : "");
+    if(isImage){
+      b.innerHTML = SHAPE_SVGS[opt] || "";
+      b.setAttribute("aria-label", "Opción "+(i+1));
+    } else {
+      // notación de intervalos ( [0,1] vs (0,1] ): cada extremo se marca con
+      // color + punto relleno/hueco para que no se confundan a simple vista
+      const interval = formatIntervalOption(opt);
+      if(interval){ b.innerHTML = interval; anyInterval = true; }
+      else { b.textContent = opt; }
+    }
+    b.addEventListener("click", ()=> answerQuestion(i, data, b));
+    modalOptions.appendChild(b);
+  });
+  intervalLegend.style.display = anyInterval ? "flex" : "none";
+
+  modalOverlay.classList.add("active");
+}
+
+function answerQuestion(selectedIdx, data, btnEl){
+  const allBtns = modalOptions.querySelectorAll(".option-btn");
+  allBtns.forEach(b=>b.disabled = true);
+
+  const isCorrect = selectedIdx === data.correct;
+  const isImage = data.type === "image";
+  const label = opt => isImage ? (SHAPE_LABELS[opt] || opt) : opt;
+
+  if(isCorrect){
+    btnEl.classList.add("correct");
+    modalFeedback.textContent = "¡Correcto! +1.0 punto";
+    modalFeedback.className = "feedback-msg ok";
+    state.correct++;
+  } else {
+    btnEl.classList.add("wrong");
+    allBtns[data.correct].classList.add("correct");
+    modalFeedback.textContent = "Incorrecto. Respuesta correcta: " + label(data.options[data.correct]);
+    modalFeedback.className = "feedback-msg bad";
+    state.wrong++;
+  }
+
+  state.pitResults.push({
+    ok: isCorrect,
+    topic: data.topic,
+    q: data.q,
+    yourAnswer: label(data.options[selectedIdx]),
+    correctAnswer: label(data.options[data.correct]),
+    explain: data.explain || ""
+  });
+
+  state.currentPit++;
+  updatePitDots();
+  updateHud();
+  btnContinue.style.display = "inline-block";
+}
+
+btnContinue.addEventListener("click", ()=>{
+  modalOverlay.classList.remove("active");
+  AudioEngine.unduck();
+
+  if(state.currentPit >= state.totalPits){
+    finishGame();
+    return;
+  }
+
+  nextPitAt += DISTANCE_PER_PIT;
+  state.paused = false;
+  document.getElementById("pauseOverlay").style.display = "none";
+  loop();
+});
+
+/* ================================================================
+   PANTALLA FINAL
+   ================================================================ */
+function finishGame(){
+  state.running = false;
+  AudioEngine.stop(); // ya no hay más pits/pista: se apaga el sonido del motor
+  const grade = state.correct.toFixed(1);
+  const total = state.correct + state.wrong;
+  const pct = total>0 ? Math.round((state.correct/total)*100) : 0;
+
+  document.getElementById("finalGradeNum").textContent = grade;
+  document.getElementById("finalName").textContent = state.studentName;
+  document.getElementById("finalCourse").textContent = state.studentCourse;
+  document.getElementById("finalDifficulty").textContent = "Dificultad: " + difficultyLabel(state.difficulty);
+  document.getElementById("finalDate").textContent = new Date().toLocaleString();
+  document.getElementById("statCorrect").textContent = state.correct;
+  document.getElementById("statWrong").textContent = state.wrong;
+  document.getElementById("statCollisions").textContent = state.collisions;
+  document.getElementById("statPercent").textContent = pct+"%";
+
+  buildReview();
+  saveToLocalStorage(grade, pct);
+  showScreen("screen-final");
+}
+
+/* mini análisis: repasa cada pregunta fallada con la respuesta correcta y el porqué */
+function buildReview(){
+  const section = document.getElementById("reviewSection");
+  const list = document.getElementById("reviewList");
+  list.innerHTML = "";
+
+  const fails = state.pitResults.filter(r => !r.ok);
+  if(fails.length === 0){
+    section.style.display = "none";
+    return;
+  }
+
+  fails.forEach(r=>{
+    const div = document.createElement("div");
+    div.className = "review-item";
+    div.innerHTML = `
+      <div class="r-topic">${r.topic}</div>
+      <div class="r-q">${r.q}</div>
+      <div class="r-line">Tu respuesta: <span class="r-your">${formatIntervalOption(r.yourAnswer) || r.yourAnswer}</span></div>
+      <div class="r-line">Respuesta correcta: <span class="r-correct">${formatIntervalOption(r.correctAnswer) || r.correctAnswer}</span></div>
+      ${r.explain ? `<div class="r-explain">💡 ${r.explain}</div>` : ""}
+    `;
+    list.appendChild(div);
+  });
+
+  section.style.display = "block";
+}
+
+/* ---- localStorage ---- */
+function saveToLocalStorage(grade, pct){
+  try{
+    const key = "calcracer_resultados";
+    const list = JSON.parse(localStorage.getItem(key) || "[]");
+    list.push({
+      nombre: state.studentName,
+      curso: state.studentCourse,
+      nota: grade,
+      correctas: state.correct,
+      incorrectas: state.wrong,
+      colisiones: state.collisions,
+      desempeno: pct+"%",
+      fecha: new Date().toISOString()
+    });
+    localStorage.setItem(key, JSON.stringify(list));
+    document.getElementById("saveMsg").textContent = "Resultado guardado automáticamente en el historial local (" + list.length + " registro(s)).";
+  }catch(e){
+    document.getElementById("saveMsg").textContent = "No se pudo guardar en el almacenamiento local del navegador.";
+  }
+}
+
+/* ---- descargar TXT ---- */
+document.getElementById("btnDownloadTxt").addEventListener("click", ()=>{
+  const total = state.correct + state.wrong;
+  const pct = total>0 ? Math.round((state.correct/total)*100) : 0;
+  const lines = [
+    "================================================",
+    "   CALCRACER - REPORTE DE EVALUACIÓN",
+    "   Cálculo Multivariable",
+    "================================================",
+    "Estudiante : " + state.studentName,
+    "Curso/Grupo: " + state.studentCourse,
+    "Dificultad : " + difficultyLabelPlain(state.difficulty),
+    "Fecha      : " + new Date().toLocaleString(),
+    "------------------------------------------------",
+    "Preguntas correctas   : " + state.correct + " / " + state.totalPits,
+    "Preguntas incorrectas : " + state.wrong + " / " + state.totalPits,
+    "Colisiones en pista   : " + state.collisions,
+    "Desempeño             : " + pct + "%",
+    "------------------------------------------------",
+    "NOTA FINAL: " + state.correct.toFixed(1) + " / 10.0",
+    "================================================"
+  ];
+  const blob = new Blob([lines.join("\n")], {type:"text/plain;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Reporte_CalcRacer_" + safeFileName(state.studentName) + ".txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+/* ---- descargar PDF ---- */
+document.getElementById("btnDownloadPdf").addEventListener("click", ()=>{
+  const total = state.correct + state.wrong;
+  const pct = total>0 ? Math.round((state.correct/total)*100) : 0;
+
+  if(!window.jspdf){
+    alert("No se pudo cargar el generador de PDF (sin conexión a internet). Usa 'Descargar TXT' como alternativa.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFillColor(10,10,15);
+  doc.rect(0,0,210,40,"F");
+  doc.setTextColor(5,240,255);
+  doc.setFontSize(22);
+  doc.text("CALCRACER", 20, 20);
+  doc.setFontSize(11);
+  doc.setTextColor(255,0,128);
+  doc.text("Reporte de Evaluación - Cálculo Multivariable", 20, 30);
+
+  doc.setTextColor(20,20,20);
+  doc.setFontSize(12);
+  let y = 55;
+  const row = (label,val)=>{ doc.setFont(undefined,"bold"); doc.text(label,20,y); doc.setFont(undefined,"normal"); doc.text(String(val),80,y); y+=9; };
+
+  row("Estudiante:", state.studentName);
+  row("Curso/Grupo:", state.studentCourse);
+  row("Dificultad:", difficultyLabelPlain(state.difficulty));
+  row("Fecha:", new Date().toLocaleString());
+  y+=4;
+  row("Preguntas correctas:", state.correct + " / " + state.totalPits);
+  row("Preguntas incorrectas:", state.wrong + " / " + state.totalPits);
+  row("Colisiones en pista:", state.collisions);
+  row("Desempeño:", pct + "%");
+
+  y += 12;
+  doc.setDrawColor(5,240,255);
+  doc.setLineWidth(0.8);
+  doc.line(20,y,190,y);
+  y += 14;
+
+  doc.setFontSize(18);
+  doc.setTextColor(0,150,160);
+  doc.text("NOTA FINAL: " + state.correct.toFixed(1) + " / 10.0", 20, y);
+
+  doc.setFontSize(9);
+  doc.setTextColor(140,140,140);
+  doc.text("Generado automáticamente por CalcRacer - Juego educativo de Cálculo Multivariable.", 20, 285);
+
+  doc.save("Reporte_CalcRacer_" + safeFileName(state.studentName) + ".pdf");
+});
+
+function safeFileName(name){
+  return name.trim().replace(/[^a-zA-Z0-9_\- ]/g,"").replace(/\s+/g,"_") || "Estudiante";
+}
+
+/* ---- reiniciar ---- */
+document.getElementById("btnRestart").addEventListener("click", ()=>{
+  inputName.value = "";
+  inputCourse.value = "";
+  errName.textContent = "";
+  errCourse.textContent = "";
+  inputName.classList.remove("invalid");
+  inputCourse.classList.remove("invalid");
+  if(animFrameId) cancelAnimationFrame(animFrameId);
+  state.running = false;
+  showScreen("screen-start");
+});
+
+/* inicial: dibuja un frame estático de bienvenida en el canvas por si acaso */
+resetGameVars();
+draw();
+
+})();
+</script>
+</body>
+</html>
