@@ -289,6 +289,27 @@
     flex-direction:column;gap:10px;
     font-family:'Orbitron',sans-serif;letter-spacing:2px;
   }
+  /* controles táctiles: en mouse/teclado quedan ocultos por defecto y solo
+     se muestran en pantallas táctiles (celular/tablet), donde no hay
+     flechas ni teclas A/D para mover el carril */
+  .lane-btn{
+    position:absolute;bottom:16px;
+    width:60px;height:60px;border-radius:50%;
+    background:rgba(5,6,10,0.5);border:2px solid rgba(255,255,255,0.4);
+    color:#fff;font-size:24px;line-height:1;
+    align-items:center;justify-content:center;
+    -webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;
+    display:none;z-index:5;
+  }
+  .lane-btn:active{background:rgba(5,247,255,0.35);border-color:var(--neon-cyan);}
+  .lane-btn-left{left:16px;}
+  .lane-btn-right{right:16px;}
+  .touch-hint{display:none;}
+  @media (hover:none) and (pointer:coarse){
+    .lane-btn{display:flex;}
+    .kb-hint{display:none;}
+    .touch-hint{display:block;}
+  }
 
   /* ---------- question modal ---------- */
   #modalOverlay{
@@ -513,9 +534,12 @@
       <canvas id="gameCanvas" width="900" height="520"></canvas>
       <div id="collisionFlash"></div>
       <div id="pauseOverlay"><div class="neon-text font-display">PIT STOP</div></div>
+      <button type="button" id="btnLaneLeft" class="lane-btn lane-btn-left" aria-label="Mover a la izquierda">◀</button>
+      <button type="button" id="btnLaneRight" class="lane-btn lane-btn-right" aria-label="Mover a la derecha">▶</button>
     </div>
   </div>
-  <div class="controls-hint">Mueve con <kbd>←</kbd> <kbd>→</kbd> o <kbd>A</kbd> <kbd>D</kbd> · Esquiva conos y aceite</div>
+  <div class="controls-hint kb-hint">Mueve con <kbd>←</kbd> <kbd>→</kbd> o <kbd>A</kbd> <kbd>D</kbd> · Esquiva conos y aceite</div>
+  <div class="controls-hint touch-hint">Toca ◀ ▶ para cambiar de carril · Esquiva conos y aceite</div>
 </section>
 
 <!-- =============================================================== -->
@@ -1849,6 +1873,23 @@ window.addEventListener("keydown", e=>{
   if(e.key === "ArrowLeft" || e.key.toLowerCase() === "a"){ moveLane(-1); }
   if(e.key === "ArrowRight" || e.key.toLowerCase() === "d"){ moveLane(1); }
 });
+
+// controles táctiles (celular/tablet): los mismos botones ◀ ▶ que aparecen
+// superpuestos sobre el canvas en pantallas sin teclado. "pointerdown"
+// cubre touch/mouse/lápiz con un solo listener y sin el retraso de "click".
+const btnLaneLeft = document.getElementById("btnLaneLeft");
+const btnLaneRight = document.getElementById("btnLaneRight");
+function bindLaneButton(el, dir){
+  el.addEventListener("pointerdown", e=>{
+    e.preventDefault();
+    if(!state.running || state.paused) return;
+    moveLane(dir);
+  });
+  // evita que un "click" fantasma sintetizado después del touch dispare algo más
+  el.addEventListener("click", e=> e.preventDefault());
+}
+bindLaneButton(btnLaneLeft, -1);
+bindLaneButton(btnLaneRight, 1);
 
 function moveLane(dir){
   if(laneChangeCooldown > 0) return;
