@@ -433,7 +433,8 @@
     background:#0a0b13;border:1px solid var(--border);border-left:3px solid var(--neon-magenta);
     border-radius:8px;padding:14px 16px;margin-bottom:10px;
   }
-  .review-item .r-topic{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:5px;}
+  .review-item.ok{border-left-color:var(--neon-green);}
+  .review-item .r-topic{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:5px;display:flex;justify-content:space-between;gap:8px;}
   .review-item .r-q{font-weight:700;margin-bottom:8px;line-height:1.4;}
   .review-item .r-line{font-size:14px;line-height:1.6;}
   .review-item .r-your{color:var(--neon-magenta);font-weight:700;}
@@ -498,7 +499,7 @@
         <b>Cómo se juega:</b> mueve el auto con <b>← →</b> o <b>A / D</b> entre los 3 carriles, esquiva conos
         y manchas de aceite. Cada colisión reduce tu velocidad. A lo largo de la pista encontrarás
         <b>10 Pits</b>: al entrar se detiene la carrera y debes responder una pregunta de Cálculo
-        Multivariable (funciones multivariables, dominio y rango, gráficas y curvas/superficies de nivel).
+        Multivariable (límites y continuidad, diferenciales, regla de la cadena y razones relacionadas).
         Cada respuesta correcta suma <b>1.0 punto</b> sobre una nota final de <b>10.0</b>.
       </div>
 
@@ -573,7 +574,7 @@
       </div>
 
       <div class="review-section" id="reviewSection" style="display:none;">
-        <h3 class="review-title">📋 Mini análisis de tus respuestas</h3>
+        <h3 class="review-title">📋 Repaso completo de tus respuestas</h3>
         <div id="reviewList"></div>
       </div>
 
@@ -599,29 +600,19 @@
     <div class="modal-body">
       <div class="topics-grid">
         <div class="topic-card" style="--accent:var(--neon-cyan);">
-          <div class="topic-icon">ƒ</div>
-          <h4>Funciones multivariables</h4>
-          <p>Funciones que dependen de dos o más variables independientes, como f(x,y), y cómo evaluarlas en un punto.</p>
+          <div class="topic-icon">∄</div>
+          <h4>Límites y Continuidad</h4>
+          <p>Evaluar límites de funciones de varias variables por distintas trayectorias (rectas, parábolas, polares) para probar si existen o no, y analizar la continuidad en un punto o en todo el plano.</p>
         </div>
         <div class="topic-card" style="--accent:var(--neon-green);">
-          <div class="topic-icon">▭</div>
-          <h4>Dominio y Rango</h4>
-          <p>El conjunto de puntos (x,y) donde f está definida (cuidado con raíces, denominadores y logaritmos), y el conjunto de valores que puede tomar f(x,y).</p>
+          <div class="topic-icon">dz</div>
+          <h4>Diferenciales</h4>
+          <p>La diferencial total dz = fx dx + fy dy, la linealización L(x,y) de una función, y su uso para aproximar cambios y estimar errores máximos en mediciones.</p>
         </div>
         <div class="topic-card" style="--accent:var(--neon-magenta);">
-          <div class="topic-icon">◔</div>
-          <h4>Gráfica de f(x,y)</h4>
-          <p>La superficie en ℝ³ que forma una función de dos variables: planos, paraboloides, esferas, conos y sillas de montar.</p>
-        </div>
-        <div class="topic-card" style="--accent:var(--neon-yellow);">
-          <div class="topic-icon">◎</div>
-          <h4>Curvas y superficies de nivel</h4>
-          <p>Al fijar f(x,y) = k se obtiene una curva en el plano XY: puede ser circunferencia, elipse, parábola, hipérbola o recta.</p>
-        </div>
-        <div class="topic-card" style="--accent:var(--neon-orange);">
-          <div class="topic-icon">⬭</div>
-          <h4>Secciones Cónicas</h4>
-          <p>Completar el cuadrado para identificar circunferencias, elipses, parábolas e hipérbolas (y sus superficies cuádricas en 3D): centro, vértices, focos, asíntotas y directriz.</p>
+          <div class="topic-icon">∂</div>
+          <h4>Regla de la Cadena</h4>
+          <p>Derivar funciones compuestas de varias variables (dz/dt, ∂z/∂r, ∂z/∂s), diferenciación implícita, y problemas de razones relacionadas donde varias cantidades cambian a la vez.</p>
         </div>
       </div>
     </div>
@@ -657,764 +648,550 @@
 "use strict";
 
 /* ================================================================
-   BANCO DE PREGUNTAS (16 preguntas, 4 por tema)
+   BANCO DE PREGUNTAS
+   Unidad: Límites y Continuidad, Diferenciales y Aproximación Lineal,
+   Regla de la Cadena y Razones Relacionadas.
    ================================================================ */
 const QUESTION_BANK = [
-  // ---- Tema 1: Funciones multivariables ----
+  /* ================================================================
+     TEMA 1: LÍMITES Y CONTINUIDAD
+     ================================================================ */
+  // ---- Fácil ----
   {
-    topic:"Funciones multivariables",
-    q:"¿Cuál de las siguientes expresiones representa correctamente una función de dos variables?",
-    options:["f(x) = x² + 5", "f(x,y) = x² + y²", "f(x,y,z,w) sin variable dependiente", "y = f(x) + g(x)"],
+    topic:"Límites y Continuidad",
+    q:"Para que lim(x,y)→(a,b) f(x,y) exista, el valor del límite debe ser el mismo:",
+    options:["Solo a lo largo del eje x", "A lo largo de toda trayectoria posible que se acerque a (a,b)", "Solo a lo largo de rectas y = mx", "Solo si f es polinomial"],
     correct:1,
     dificultad:"facil",
-    explain:"Una función de dos variables depende de x y de y a la vez, como f(x,y) = x² + y². f(x) solo depende de una variable, y una expresión sin variable dependiente no define una función."
+    explain:"A diferencia de una variable (donde solo hay 2 direcciones de acercamiento), en dos variables hay infinitas trayectorias posibles. El límite existe únicamente si da el mismo valor por todas ellas."
   },
   {
-    topic:"Funciones multivariables",
-    q:"Si f(x,y) = x²y − 3y + 2x, ¿cuál es el valor de f(2, 1)?",
-    options:["3", "7", "5", "9"],
+    topic:"Límites y Continuidad",
+    q:"Si a lo largo de y=0 el límite de f(x,y) en (0,0) da 0, y a lo largo de y=x da 1, ¿qué se puede concluir sobre lim(x,y)→(0,0) f(x,y)?",
+    options:["El límite es 0", "El límite es 1", "El límite NO existe, porque distintas trayectorias dan valores distintos", "El límite es el promedio, 0.5"],
     correct:2,
     dificultad:"facil",
-    explain:"Sustituyendo x=2, y=1: x²y = (2)²(1) = 4; −3y = −3; 2x = 4. Sumando: 4 − 3 + 4 = 5."
+    explain:"Si dos trayectorias distintas producen valores distintos, el límite no puede existir: para existir, tendría que ser el mismo número sin importar la trayectoria elegida."
   },
   {
-    topic:"Funciones multivariables",
-    q:"Una función f: ℝⁿ → ℝ que depende de más de una variable independiente se denomina:",
-    options:["Función implícita", "Función multivariable (o de varias variables)", "Función inversa", "Función periódica"],
+    topic:"Límites y Continuidad",
+    q:"Toda función polinomial en x,y (como f(x,y) = 3x²y − 2xy + 7) es continua en:",
+    options:["Solo el origen", "Ningún punto", "Todo ℝ²", "Solo donde x = y"],
+    correct:2,
+    dificultad:"facil",
+    explain:"Las funciones polinomiales son combinaciones de sumas y productos de funciones continuas, así que son continuas en todo el plano ℝ²."
+  },
+  {
+    topic:"Límites y Continuidad",
+    q:"La función f(x,y) = 1/(x²+y²) es discontinua en:",
+    options:["Todo ℝ²", "Solo el origen (0,0), donde el denominador se anula", "Solo el eje x", "En ningún punto"],
     correct:1,
     dificultad:"facil",
-    explain:"Por definición, una función que toma varias variables independientes (x, y, z, ...) y entrega un solo valor real se llama función multivariable o de varias variables."
+    explain:"El denominador x²+y² se anula únicamente en (0,0); ahí la función no está definida y por tanto es discontinua, mientras que en el resto del plano es un cociente de polinomios continuo."
   },
   {
-    topic:"Funciones multivariables",
-    q:"Dado f(x,y,z) = xy + yz + xz, el valor de f(1,2,3) es:",
-    options:["11", "6", "14", "9"],
+    topic:"Límites y Continuidad",
+    q:"Evaluar un límite de dos variables solo a lo largo de rectas y = mx (que pasan por el origen):",
+    options:["Siempre es suficiente para probar que el límite existe", "Solo sirve para sospechar que NO existe si el resultado depende de m; no basta para probar que sí existe", "Nunca es útil", "Prueba automáticamente la continuidad de f"],
+    correct:1,
+    dificultad:"facil",
+    explain:"Si el resultado cambia según la pendiente m, el límite no existe. Pero si da igual para toda recta, eso no basta para garantizar que existe: hay infinitas trayectorias curvas que también deben coincidir."
+  },
+  {
+    topic:"Límites y Continuidad",
+    q:"lim(x,y)→(2,3) (x²+y²) es igual a:",
+    options:["5", "13", "6", "25"],
+    correct:1,
+    dificultad:"facil",
+    explain:"Como x²+y² es polinomial (y por tanto continua en todo punto), el límite se calcula simplemente evaluando: 2²+3² = 4+9 = 13."
+  },
+  {
+    topic:"Límites y Continuidad",
+    q:"Si f(x,y) es continua en el punto (a,b), entonces necesariamente:",
+    options:["lim(x,y)→(a,b) f(x,y) = f(a,b)", "f(a,b) no está definida", "El límite en ese punto no existe", "f es discontinua en todos los demás puntos"],
     correct:0,
     dificultad:"facil",
-    explain:"Sustituyendo x=1, y=2, z=3: xy=2, yz=6, xz=3. Sumando: 2 + 6 + 3 = 11."
-  },
-
-  // ---- Tema 2: Dominio y Rango ----
-  {
-    topic:"Dominio y Rango",
-    q:"El dominio de f(x,y) = √(x² + y² − 4) corresponde a:",
-    options:[
-      "El interior del círculo x² + y² = 4",
-      "Todos los puntos (x,y) tales que x² + y² ≥ 4 (exterior o borde de la circunferencia de radio 2)",
-      "Todo el plano ℝ²",
-      "Solo el eje x"
-    ],
-    correct:1,
-    dificultad:"facil",
-    explain:"Para que la raíz cuadrada sea real, el radicando no puede ser negativo: x² + y² − 4 ≥ 0, es decir x² + y² ≥ 4. Eso es el exterior (o el borde) de la circunferencia de radio 2, no su interior."
+    explain:"La definición de continuidad en un punto exige exactamente que el límite ahí coincida con el valor de la función en ese punto."
   },
   {
-    topic:"Dominio y Rango",
-    q:"¿Cuál es el dominio natural de f(x,y) = 1 / (x − y)?",
-    options:[
-      "Todo ℝ²",
-      "Solo los puntos donde x = y",
-      "Todos los (x,y) ∈ ℝ² excepto donde x = y",
-      "Solo el primer cuadrante"
-    ],
+    topic:"Límites y Continuidad",
+    q:"¿Cuál de las siguientes NO es una forma válida de probar que un límite doble SÍ existe?",
+    options:["Usar el teorema del sandwich (acotamiento)", "Convertir a coordenadas polares y mostrar que el límite no depende de θ", "Evaluar el límite solo a lo largo de una única recta y = mx", "Mostrar que f es continua ahí por ser suma/producto/cociente de funciones continuas"],
     correct:2,
     dificultad:"facil",
-    explain:"Una fracción no está definida cuando el denominador es 0. Aquí x − y = 0 exactamente cuando x = y, así que esos puntos se excluyen del dominio."
+    explain:"Evaluar una sola trayectoria nunca prueba que el límite existe: solo puede usarse para demostrar que NO existe, si se contradice con el resultado de otra trayectoria."
   },
+  // ---- Intermedio ----
   {
-    topic:"Dominio y Rango",
-    q:"El rango de f(x,y) = x² + y² es:",
-    options:["(−∞, ∞)", "[0, ∞)", "(0, ∞)", "[−1, 1]"],
-    correct:1,
-    dificultad:"facil",
-    explain:"x² + y² es una suma de cuadrados, así que nunca es negativa, y sí alcanza el valor 0 en el origen (0,0). Por eso el rango es [0, ∞) con corchete cerrado, no (0, ∞)."
-  },
-  {
-    topic:"Dominio y Rango",
-    q:"Para que f(x,y) = ln(x + y) esté definida, se requiere que:",
-    options:["x + y = 0", "x + y > 0", "x + y < 0", "x − y > 0"],
-    correct:1,
-    dificultad:"facil",
-    explain:"El logaritmo natural solo está definido para argumentos estrictamente positivos, por lo que se necesita x + y > 0."
-  },
-
-  // ---- Tema 3: Gráfica de función de dos variables ----
-  {
-    topic:"Gráfica de funciones de dos variables",
-    q:"La gráfica de f(x,y) = x² + y² en ℝ³ corresponde a:",
-    options:["Un plano inclinado", "Un paraboloide que abre hacia arriba", "Una esfera completa", "Un cono con vértice en el infinito"],
-    correct:1,
-    dificultad:"facil",
-    explain:"z = x² + y² crece en todas direcciones a partir del origen como una taza, formando un paraboloide circular que abre hacia arriba (no un plano, ni una esfera ni un cono)."
-  },
-  {
-    topic:"Gráfica de funciones de dos variables",
-    q:"La gráfica de una función lineal z = ax + by + c es siempre:",
-    options:["Una curva cerrada", "Un plano en ℝ³", "Un paraboloide", "Una superficie cónica"],
-    correct:1,
-    dificultad:"facil",
-    explain:"Una expresión lineal en x e y, z = ax + by + c, define siempre un plano en el espacio tridimensional."
-  },
-  {
-    topic:"Gráfica de funciones de dos variables",
-    q:"En general, la gráfica de una función z = f(x,y) es un subconjunto de:",
-    options:["ℝ¹", "ℝ²", "ℝ³", "ℝ⁴"],
+    topic:"Límites y Continuidad",
+    q:"Para f(x,y) = (x²−y²)/(x²+y²), evaluando a lo largo de y=0 se obtiene 1, y a lo largo de x=0 se obtiene −1. Por lo tanto lim(x,y)→(0,0) f(x,y):",
+    options:["Es 1", "Es −1", "No existe", "Es 0"],
     correct:2,
-    dificultad:"facil",
-    explain:"Cada punto de la gráfica tiene tres coordenadas (x, y, z), así que la gráfica vive en el espacio tridimensional ℝ³."
+    dificultad:"intermedio",
+    explain:"Ambas trayectorias producen resultados distintos (1 y −1), así que el límite no puede existir: no hay un único valor al que se acerque f sin importar la dirección."
   },
   {
-    topic:"Gráfica de funciones de dos variables",
-    q:"La gráfica de f(x,y) = √(1 − x² − y²) corresponde a:",
-    options:[
-      "Un plano horizontal",
-      "La mitad superior de una esfera de radio 1 centrada en el origen",
-      "Un cilindro infinito",
-      "Un paraboloide hiperbólico"
-    ],
+    topic:"Límites y Continuidad",
+    q:"Para f(x,y) = xy²/(x²+y⁴), por cualquier recta y = mx el límite en (0,0) da 0. Pero evaluando por la trayectoria parabólica x = y² se obtiene 1/2. ¿Qué se concluye?",
+    options:["El límite no existe, aunque todas las rectas dieran 0", "El límite es 0, porque las rectas son suficientes", "El límite es 1/2, porque la parábola 'gana'", "El límite es el promedio entre 0 y 1/2"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"Aunque todas las rectas dan 0, la parábola x=y² da 1/2, un valor distinto. Esto confirma que probar solo con rectas no es suficiente: hay que probar también con otras curvas."
+  },
+  {
+    topic:"Límites y Continuidad",
+    q:"Usando coordenadas polares (x=r cosθ, y=r senθ) se puede acotar |x²y/(x²+y²)| = r|cos²θ senθ| ≤ r. Como esta cota no depende de θ y r→0, el límite lim(x,y)→(0,0) x²y/(x²+y²) es:",
+    options:["No existe", "Es 0", "Es 1", "Depende de θ"],
     correct:1,
-    dificultad:"facil",
-    explain:"Elevando al cuadrado: z² = 1 − x² − y², es decir x² + y² + z² = 1, la ecuación de una esfera de radio 1. Como z = √(...) ≥ 0, solo se obtiene la mitad superior."
+    dificultad:"intermedio",
+    explain:"Al acotar la expresión por r (independiente de θ) y como r→0, el teorema del sandwich garantiza que el límite es 0, sin importar la dirección de acercamiento."
   },
-
-  // ---- Tema 4: Curvas y superficies de nivel ----
   {
-    topic:"Curvas y superficies de nivel",
-    q:"Las curvas de nivel de f(x,y) = x² + y² para valores k > 0 son:",
-    options:["Rectas paralelas", "Circunferencias concéntricas de radio √k", "Parábolas", "Puntos aislados"],
+    topic:"Límites y Continuidad",
+    q:"Usando coordenadas polares, f(x,y) = xy/√(x²+y²) se reescribe como f = r cosθ senθ, que tiende a 0 cuando r→0 sin importar θ. Entonces lim(x,y)→(0,0) f(x,y):",
+    options:["No existe", "Es 0", "Es 1", "No se puede determinar con polares"],
     correct:1,
-    dificultad:"facil",
-    explain:"Haciendo x² + y² = k se obtiene la ecuación de una circunferencia centrada en el origen de radio √k; para distintos valores de k > 0 son circunferencias concéntricas."
+    dificultad:"intermedio",
+    explain:"Como la expresión en polares queda acotada por r (que tiende a 0) multiplicado por una función acotada de θ, el límite es 0."
   },
   {
-    topic:"Curvas y superficies de nivel",
-    q:"Una curva de nivel de f(x,y) se obtiene al:",
-    options:[
-      "Derivar la función respecto a x",
-      "Hacer f(x,y) = k para una constante k y graficar en el plano xy",
-      "Integrar la función sobre todo el dominio",
-      "Calcular el límite de f cuando (x,y) tiende al infinito"
-    ],
+    topic:"Límites y Continuidad",
+    q:"Para f(x,y) = x²y/(x⁴+y²), evaluando por cualquier recta y=mx se obtiene 0, pero por la trayectoria y=x² se obtiene 1/2. Por lo tanto el límite en (0,0):",
+    options:["Es 0, porque toda recta da 0", "No existe, porque la curva y=x² da un valor distinto", "Es 1/2", "Es infinito"],
     correct:1,
-    dificultad:"facil",
-    explain:"Por definición, una curva de nivel es el conjunto de puntos (x,y) que cumplen f(x,y) = k para una constante k fija, graficado en el plano xy."
+    dificultad:"intermedio",
+    explain:"Esta es la contraparte del ejemplo anterior con los roles de x,y intercambiados: la curva y=x² (que no es una recta) produce 1/2, distinto del 0 obtenido por rectas, así que el límite no existe."
   },
   {
-    topic:"Curvas y superficies de nivel",
-    q:"Las superficies de nivel (en lugar de curvas de nivel) se utilizan para representar funciones de:",
-    options:["Una variable", "Dos variables", "Tres variables, f(x,y,z) = k", "Ninguna variable"],
+    topic:"Límites y Continuidad",
+    q:"La función f(x,y) = sen(x−y)/(x−y) para x≠y, con f(x,x)=1, es continua en:",
+    options:["Todo ℝ² (la definición en x=y 'rellena' correctamente el hueco)", "Solo donde x≠y", "En ningún punto", "Solo en el origen"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"Como lim u→0 sen(u)/u = 1 (límite clásico de una variable, con u=x−y), definir f(x,x)=1 elimina exactamente la discontinuidad removible en la recta x=y, haciendo f continua en todo el plano."
+  },
+  {
+    topic:"Límites y Continuidad",
+    q:"¿Cuál es el mayor conjunto en el que f(x,y) = ln(4 − x² − y²) es continua?",
+    options:["Todo ℝ²", "El interior del círculo x²+y² < 4", "El exterior del círculo x²+y² > 4", "Solo el origen"],
+    correct:1,
+    dificultad:"intermedio",
+    explain:"El logaritmo exige que su argumento sea positivo: 4 − x² − y² > 0, es decir x²+y² < 4, el interior (abierto, sin borde) del disco de radio 2."
+  },
+  {
+    topic:"Límites y Continuidad",
+    q:"Para que f(x,y) = sen⁻¹(x/y) esté definida y sea continua en un punto, se requiere que:",
+    options:["y ≠ 0 y además −1 ≤ x/y ≤ 1", "x = 0", "y > 0 únicamente", "x ≠ y"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"arcsin solo está definido cuando su argumento está en [−1,1], y además y no puede ser 0 porque aparece en el denominador de x/y."
+  },
+  {
+    topic:"Límites y Continuidad",
+    q:"Dada f(x,y) = √(1−x²−4y²) si x²+4y²≤1, y f(x,y)=c si x²+4y²>1, ¿qué valor de c hace que f sea continua en todo el plano?",
+    options:["c = 0", "c = 1", "No existe un valor de c que funcione", "c = 4"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"En la frontera x²+4y²=1, la primera pieza vale √(1−1)=0. Para que no haya salto entre las dos piezas, c debe igualar ese valor en la frontera, es decir c=0."
+  },
+  {
+    topic:"Límites y Continuidad",
+    q:"Dada f(x,y) = 1 si x²+y² ≤ 1, y f(x,y) = 0 si x²+y² > 1, el límite lim(x,y)→(0,0) f(x,y) es:",
+    options:["0", "1", "No existe", "1/2"],
+    correct:1,
+    dificultad:"intermedio",
+    explain:"El punto (0,0) está en el interior del círculo de radio 1, así que para todo punto suficientemente cercano a él f vale constantemente 1; el límite (y de hecho f misma) vale 1 ahí."
+  },
+  {
+    topic:"Límites y Continuidad",
+    q:"Si g y h son funciones continuas de x y y, y f(x,y) = g(x,y) / h(x,y), entonces f es continua:",
+    options:["En todo ℝ² sin excepción", "En todos los puntos donde h(x,y) ≠ 0", "Solo donde g(x,y) = 0", "Nunca, un cociente nunca es continuo"],
+    correct:1,
+    dificultad:"intermedio",
+    explain:"El cociente de dos funciones continuas es continuo en todos los puntos donde el denominador no se anula; donde h=0 el cociente ni siquiera está definido."
+  },
+  // ---- Difícil ----
+  {
+    topic:"Límites y Continuidad",
+    q:"Para f(x,y) = x³y/(x⁶+y²), por cualquier recta y=mx el límite en (0,0) da 0. Pero por la curva y=x³ se obtiene 1/2. ¿Qué concluye sobre el límite?",
+    options:["Existe y vale 0", "Existe y vale 1/2", "No existe, porque la curva y=x³ contradice el resultado de las rectas", "No existe, porque en polares depende de θ"],
     correct:2,
-    dificultad:"facil",
-    explain:"Con tres variables independientes, la ecuación f(x,y,z) = k ya no traza una curva en el plano sino una superficie en el espacio; por eso se llaman superficies de nivel."
+    dificultad:"dificil",
+    explain:"Por cualquier recta y=mx el límite da 0, pero por la curva y=x³ (que 'empareja' el grado 6 del denominador) da 1/2; como los valores no coinciden, el límite no existe, aunque 'pase' la prueba de las rectas."
   },
   {
-    topic:"Curvas y superficies de nivel",
-    q:"Para f(x,y) = x + y, la curva de nivel correspondiente a k = 4 es:",
-    options:["La recta x + y = 4", "La circunferencia x² + y² = 4", "La parábola y = x² + 4", "El punto (4,4)"],
+    topic:"Límites y Continuidad",
+    q:"Usando polares, (x²−y²)/√(x²+y²) se puede escribir como r(cos²θ−sen²θ), que queda acotada en valor absoluto por r (ya que |cos²θ−sen²θ| ≤ 1). Por lo tanto lim(x,y)→(0,0) (x²−y²)/√(x²+y²):",
+    options:["No existe", "Existe y vale 0", "Existe y vale 1", "Depende de θ, por lo que no se puede concluir"],
+    correct:1,
+    dificultad:"dificil",
+    explain:"Como la expresión queda acotada por r (sin depender de θ) y r→0, el teorema del sandwich garantiza que el límite es 0, sin importar la dirección de acercamiento."
+  },
+  {
+    topic:"Límites y Continuidad",
+    q:"Para f(x,y,z) = xyz/(x²+y²+z²) con (x,y,z)→(0,0,0), usando coordenadas esféricas se puede acotar |f| ≤ Cρ para alguna constante C. Por lo tanto el límite:",
+    options:["No existe", "Existe y es 0", "Existe y es 1", "No se puede evaluar con coordenadas esféricas"],
+    correct:1,
+    dificultad:"dificil",
+    explain:"Al acotar la expresión por una constante multiplicada por ρ (que tiende a 0 sin importar la dirección), el teorema del sandwich garantiza que el límite triple es 0."
+  },
+  {
+    topic:"Límites y Continuidad",
+    q:"Sea f(x,y) = x²y²/(x²y²+(x−y)²) para (x,y)≠(0,0). Evaluando a lo largo de y=x (x≠0) se obtiene 1, y a lo largo de y=0 se obtiene 0. ¿Qué se concluye?",
+    options:["El límite es 1", "El límite es 0", "El límite no existe, porque dos trayectorias dan valores distintos", "El límite es 1/2"],
+    correct:2,
+    dificultad:"dificil",
+    explain:"Sobre y=x, el término (x−y)² se anula y la expresión vale 1; sobre y=0, el numerador se anula y la expresión vale 0. Dos trayectorias distintas dan valores distintos, así que el límite no existe."
+  },
+  {
+    topic:"Límites y Continuidad",
+    q:"Para f(x,y) = x²y²/(x²+y²)², evaluando por y=mx se obtiene f = m²/(1+m²)², una expresión que cambia según el valor de m (por ejemplo, 0 si m=0, pero 1/4 si m=1). Por lo tanto el límite en (0,0):",
+    options:["Existe y vale 0", "No existe, porque el resultado depende de la pendiente m de la recta elegida", "Existe y vale 1", "Es infinito"],
+    correct:1,
+    dificultad:"dificil",
+    explain:"Como m²/(1+m²)² no es constante (varía según la recta elegida), distintas trayectorias rectas ya producen valores distintos, por lo que el límite no existe."
+  },
+  // ================================================================
+  // TEMA 2: DIFERENCIALES Y APROXIMACIÓN LINEAL
+  // ================================================================
+  // ---- Fácil ----
+  {
+    topic:"Diferenciales",
+    q:"La diferencial total de z = f(x,y) se define como:",
+    options:["dz = fx dx + fy dy", "dz = fx + fy", "dz = f(x+dx, y+dy)", "dz = fxx dx + fyy dy"],
     correct:0,
     dificultad:"facil",
-    explain:"Haciendo f(x,y) = x + y = 4 se obtiene directamente la ecuación de una recta, no de una circunferencia ni una parábola."
+    explain:"La diferencial total combina linealmente las derivadas parciales con los incrementos infinitesimales de cada variable: dz = (∂f/∂x)dx + (∂f/∂y)dy."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Si z = x²y³, entonces la diferencial dz es:",
+    options:["2xy³ dx + 3x²y² dy", "2x dx + 3y² dy", "x²y³(dx+dy)", "2xy³ + 3x²y²"],
+    correct:0,
+    dificultad:"facil",
+    explain:"Derivando parcialmente: ∂z/∂x = 2xy³, ∂z/∂y = 3x²y². Por lo tanto dz = 2xy³ dx + 3x²y² dy."
+  },
+  {
+    topic:"Diferenciales",
+    q:"La linealización L(x,y) de f en el punto (a,b) se usa para:",
+    options:["Calcular el valor exacto de f lejos de (a,b)", "Aproximar f(x,y) cerca de (a,b) mediante el plano tangente", "Encontrar los puntos críticos de f", "Calcular integrales dobles"],
+    correct:1,
+    dificultad:"facil",
+    explain:"L(x,y) = f(a,b) + fx(a,b)(x−a) + fy(a,b)(y−b) es la ecuación del plano tangente, usada como aproximación lineal de f cerca del punto (a,b)."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Si f(x,y) = x+y, la linealización L(x,y) en cualquier punto (a,b) resulta ser:",
+    options:["L(x,y) = x+y (coincide exactamente con f, porque f ya es lineal)", "L(x,y) = a+b", "L(x,y) = x−y", "L(x,y) = 1"],
+    correct:0,
+    dificultad:"facil",
+    explain:"Cuando f ya es una función lineal (un plano), su propia linealización en cualquier punto es ella misma: el 'plano tangente' a un plano es el mismo plano."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Para que f sea diferenciable en un punto, la definición formal exige que, además de existir fx y fy:",
+    options:["f debe ser discontinua ahí", "f(x,y) − L(x,y) debe tender a 0 más rápido que la distancia al punto, es decir, los términos de error deben desvanecerse", "f debe ser polinomial", "Solo basta con que exista fx"],
+    correct:1,
+    dificultad:"facil",
+    explain:"La diferenciabilidad es más fuerte que solo la existencia de derivadas parciales: exige que el plano tangente aproxime bien a f cerca del punto, con términos de error que se vuelven despreciables."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Si w = f(x,y,z) = xyz, la diferencial total dw es:",
+    options:["yz dx + xz dy + xy dz", "x dx + y dy + z dz", "dx + dy + dz", "xyz(dx+dy+dz)"],
+    correct:0,
+    dificultad:"facil",
+    explain:"Derivando parcialmente respecto a cada variable: ∂w/∂x=yz, ∂w/∂y=xz, ∂w/∂z=xy, así que dw = yz dx + xz dy + xy dz."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Usar diferenciales para aproximar el cambio Δz de una función cuando (x,y) cambia ligeramente es útil porque:",
+    options:["Da siempre el valor exacto", "Da una buena aproximación lineal de primer orden, sin tener que evaluar f en el punto exacto", "Solo funciona para funciones lineales", "Reemplaza por completo el cálculo de límites"],
+    correct:1,
+    dificultad:"facil",
+    explain:"dz es una aproximación lineal de primer orden al cambio real Δz, útil cuando los incrementos dx, dy son pequeños y medir f exactamente es costoso o poco práctico."
+  },
+  // ---- Intermedio ----
+  {
+    topic:"Diferenciales",
+    q:"El área de una superficie rectangular está dada por S = 2(xy+yz+xz). Con x=60, y=80, z=50 y posibles errores de medición Δx=Δy=Δz=0.2, el error máximo aproximado en S usando diferenciales es:",
+    options:["152 cm²", "76 cm²", "38 cm²", "304 cm²"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"dS = 2(y+z)dx + 2(x+z)dy + 2(x+y)dz = 2(130)(0.2) + 2(110)(0.2) + 2(140)(0.2) = 52+44+56 = 152 cm²."
+  },
+  {
+    topic:"Diferenciales",
+    q:"El área de un triángulo rectángulo es A=(1/2)xy. Si x cambia de 3 a 3.05 pulg (dx=0.05) y y cambia de 4 a 3.97 pulg (dy=−0.03), el cambio aproximado en el área usando diferenciales es:",
+    options:["0.055 pulg²", "0.11 pulg²", "0.2 pulg²", "−0.03 pulg²"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"dA = (1/2)(y dx + x dy) = 0.5(4·0.05 + 3·(−0.03)) = 0.5(0.2−0.09) = 0.5(0.11) = 0.055 pulg²."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Un triángulo tiene lados a=10, b=12 y el ángulo entre ellos θ=π/6. Si da=0.1, db=0.1 y dθ=0.01 rad, el cambio aproximado en el área A=(1/2)ab senθ usando diferenciales es:",
+    options:["≈ 1.07 unidades²", "≈ 0.55 unidades²", "≈ 3.0 unidades²", "≈ 51.96 unidades²"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"dA = (1/2)b senθ·da + (1/2)a senθ·db + (1/2)ab cosθ·dθ = 3(0.1)+2.5(0.1)+51.96(0.01) ≈ 0.3+0.25+0.52 ≈ 1.07."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Usando diferenciales, al aproximar √(4.02² + 2.97²) con f(x,y)=√(x²+y²) cerca de (4,3), se obtiene:",
+    options:["≈ 4.998", "≈ 5.002", "≈ 5.05", "≈ 4.95"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"f(4,3)=5, fx=x/√(x²+y²)=0.8, fy=y/√(x²+y²)=0.6. Con dx=0.02, dy=−0.03: L=5+0.8(0.02)+0.6(−0.03)=5−0.002=4.998."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Para f(x,y) = x³ − x²y + 3y² en el punto (1,2), la diferencial df = fx dx + fy dy evaluada ahí es:",
+    options:["df = −dx + 11dy", "df = dx + 11dy", "df = −dx − 11dy", "df = 3dx + 2dy"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"fx = 3x²−2xy, que en (1,2) da 3−4=−1. fy = −x²+6y, que en (1,2) da −1+12=11. Entonces df = −dx + 11dy."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Para f(x,y) = x² sen y + 2y^(3/2), la diferencial df es:",
+    options:["df = 2x sen y dx + (x² cos y + 3√y) dy", "df = 2x cos y dx + 3√y dy", "df = x² cos y dx + 2x sen y dy", "df = sen y dx + y^(1/2) dy"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"fx = 2x sen y. fy = x² cos y + 2·(3/2)y^(1/2) = x² cos y + 3√y. Entonces df = 2x sen y dx + (x² cos y + 3√y) dy."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Para f(x,y) = tan⁻¹(x+2y) en el punto (1,0), la diferencial df = fx dx + fy dy evaluada ahí es:",
+    options:["df = (1/2)dx + dy", "df = dx + 2dy", "df = (1/2)dx + (1/2)dy", "df = 2dx + dy"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"fx = 1/(1+(x+2y)²), fy = 2/(1+(x+2y)²). En (1,0): x+2y=1, así que el denominador es 1+1=2. Entonces fx=1/2 y fy=2/2=1, dando df=(1/2)dx+dy."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Dos resistores en paralelo dan una resistencia total R = R₁R₂/(R₁+R₂). Con R₁=100Ω, R₂=200Ω y posibles errores dR₁=dR₂=2Ω, el error máximo aproximado en R usando diferenciales es:",
+    options:["≈ 1.11 Ω", "≈ 4 Ω", "≈ 0.44 Ω", "≈ 2 Ω"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"∂R/∂R₁ = R₂²/(R₁+R₂)² = 40000/90000 ≈ 0.444; ∂R/∂R₂ = R₁²/(R₁+R₂)² ≈ 0.111. dR ≈ 0.444(2)+0.111(2) = 0.889+0.222 ≈ 1.11 Ω."
+  },
+  {
+    topic:"Diferenciales",
+    q:"En la definición formal de diferenciabilidad, el incremento se escribe como Δf = fx(a,b)Δx + fy(a,b)Δy + ε₁Δx + ε₂Δy. ¿Qué condición deben cumplir ε₁ y ε₂?",
+    options:["Deben tender a 0 cuando (Δx,Δy)→(0,0)", "Deben ser constantes distintas de cero", "Deben ser iguales a fx y fy", "No tienen ninguna restricción particular"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"La definición formal exige que los términos de error ε₁, ε₂ se vuelvan despreciables (tiendan a 0) a medida que el punto se acerca, garantizando que el plano tangente sea una buena aproximación local."
+  },
+  // ---- Difícil ----
+  {
+    topic:"Diferenciales",
+    q:"Una topógrafa mide los lados de un campo rectangular obteniendo x=500 pies y y=700 pies, con un posible error de 1 pie en cada medición. Usando diferenciales, el error máximo aproximado en el área calculada A=xy es:",
+    options:["1200 pies²", "600 pies²", "2400 pies²", "350 000 pies²"],
+    correct:0,
+    dificultad:"dificil",
+    explain:"dA = y dx + x dy = 700(1) + 500(1) = 1200 pies², el error máximo aproximado en el área con los errores dados de 1 pie en cada lado."
+  },
+  {
+    topic:"Diferenciales",
+    q:"El volumen de un cono circular recto es V=(1/3)πr²h. Con r=6cm y h=10cm medidos con posibles errores dr=0.1cm y dh=0.2cm, el error máximo aproximado en V usando diferenciales es:",
+    options:["≈ 20.11 cm³", "≈ 12.57 cm³", "≈ 37.70 cm³", "≈ 3.77 cm³"],
+    correct:0,
+    dificultad:"dificil",
+    explain:"∂V/∂r=(2/3)πrh≈125.66, ∂V/∂h=(1/3)πr²≈37.70. dV ≈ 125.66(0.1)+37.70(0.2) = 12.57+7.54 ≈ 20.11 cm³."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Un terreno triangular tiene lados a=50m, b=70m con ángulo entre ellos θ=60°. Si da=db=0.5m y dθ=0.02 rad, el error porcentual máximo aproximado en el área A=(1/2)ab senθ es:",
+    options:["≈ 2.9%", "≈ 1.5%", "≈ 5.7%", "≈ 0.3%"],
+    correct:0,
+    dificultad:"dificil",
+    explain:"A≈1515.5 m². dA = (1/2)b senθ·da+(1/2)a senθ·db+(1/2)ab cosθ·dθ ≈ 15.16+10.83+17.50 ≈ 43.48 m². Error porcentual: 43.48/1515.5 ×100 ≈ 2.9%."
+  },
+  {
+    topic:"Diferenciales",
+    q:"La concentración máxima de cierto fármaco en la sangre es C = kD/V, donde D es la dosis y V el volumen de distribución. Si D tiene un posible error relativo del 3% y V del 2%, usando diferenciales (derivada logarítmica) el error porcentual máximo aproximado en C es:",
+    options:["≈ 5%", "≈ 1%", "≈ 6%", "≈ 0.06%"],
+    correct:0,
+    dificultad:"dificil",
+    explain:"Tomando logaritmo: ln C = ln k + ln D − ln V. Diferenciando: dC/C = dD/D − dV/V. El error máximo se estima sumando los valores absolutos de los errores relativos: 3%+2%=5%."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Si f(x,y) es diferenciable en (a,b) pero se evalúa su aproximación lineal L(x,y) en un punto alejado de (a,b), lo esperable es que:",
+    options:["El error |f−L| crezca, porque la aproximación lineal solo es confiable cerca del punto de linealización", "El error siempre sea exactamente 0, sin importar la distancia", "L(x,y) deje de estar definida", "f deje de ser diferenciable en ese otro punto"],
+    correct:0,
+    dificultad:"dificil",
+    explain:"La linealización L(x,y) es el plano tangente en (a,b): es una buena aproximación solo localmente. Entre más lejos se evalúe de (a,b), mayor es la curvatura de f que el plano no logra capturar, y el error crece."
+  },
+  {
+    topic:"Diferenciales",
+    q:"Un recipiente cilíndrico tiene radio r=5cm y altura h=12cm, medidos con posibles errores relativos dr/r=1% y dh/h=0.5%. Usando diferenciales (derivada logarítmica de V=πr²h), el error porcentual máximo aproximado en el volumen es:",
+    options:["≈ 2.5%", "≈ 1.5%", "≈ 1%", "≈ 3.5%"],
+    correct:0,
+    dificultad:"dificil",
+    explain:"ln V = ln π + 2 ln r + ln h. Diferenciando: dV/V = 2(dr/r) + dh/h = 2(1%) + 0.5% = 2.5%, el error porcentual máximo aproximado."
+  },
+  // ================================================================
+  // TEMA 3: REGLA DE LA CADENA Y RAZONES RELACIONADAS
+  // ================================================================
+  // ---- Fácil ----
+  {
+    topic:"Regla de la Cadena",
+    q:"La regla de la cadena para z=f(x,y) con x=x(t), y=y(t) establece que dz/dt es:",
+    options:["fx·(dx/dt) + fy·(dy/dt)", "fx + fy", "fx·fy", "dx/dt + dy/dt"],
+    correct:0,
+    dificultad:"facil",
+    explain:"Cada variable intermedia aporta su propia 'cadena': se multiplica la derivada parcial de f respecto a esa variable por la derivada de esa variable respecto a t, y se suman las contribuciones."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"Si z=x²y, con x=t, y=t², entonces dz/dt usando la regla de la cadena es:",
+    options:["4t³", "2t³", "t³", "2t²"],
+    correct:0,
+    dificultad:"facil",
+    explain:"dz/dt = zx·(dx/dt) + zy·(dy/dt) = (2xy)(1) + (x²)(2t). Sustituyendo x=t, y=t²: 2(t)(t²)(1) + (t²)(2t) = 2t³+2t³ = 4t³."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"Para z=f(x,y) con x=g(s,t), y=h(s,t), la derivada parcial ∂z/∂s según la regla de la cadena es:",
+    options:["(∂z/∂x)(∂x/∂s) + (∂z/∂y)(∂y/∂s)", "(∂z/∂x) + (∂z/∂y)", "(∂z/∂x)(∂x/∂t)", "∂x/∂s + ∂y/∂s"],
+    correct:0,
+    dificultad:"facil",
+    explain:"Cuando x,y dependen de s y t, calcular ∂z/∂s suma la contribución de cada variable intermedia a través de su propia derivada parcial respecto a s."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"Cuando hay dos variables intermedias (x,y) que a su vez dependen de dos variables finales (s,t), el número de términos (sumandos) para calcular ∂z/∂s por regla de la cadena es:",
+    options:["2 (uno por cada variable intermedia)", "1", "4", "0"],
+    correct:0,
+    dificultad:"facil",
+    explain:"Como z depende de x e y, y ambas dependen de s, hay exactamente dos 'caminos' hacia s: a través de x y a través de y, cada uno aportando un término a la suma."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"La regla de la cadena se usa típicamente en problemas de 'razones relacionadas' porque permite:",
+    options:["Relacionar la razón de cambio de una cantidad con las razones de cambio de las variables de las que depende", "Calcular máximos y mínimos absolutos", "Resolver ecuaciones diferenciales de segundo orden", "Graficar superficies en 3D"],
+    correct:0,
+    dificultad:"facil",
+    explain:"En razones relacionadas, varias cantidades cambian con el tiempo a la vez; la regla de la cadena permite expresar la razón de cambio de una variable dependiente en términos de las razones de cambio conocidas de las variables de las que depende."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"Si w=xyz con x=t, y=t², z=t³, entonces dw/dt evaluada en t=1, usando la regla de la cadena, es:",
+    options:["6", "3", "9", "1"],
+    correct:0,
+    dificultad:"facil",
+    explain:"dw/dt = yz(dx/dt)+xz(dy/dt)+xy(dz/dt). En t=1: x=y=z=1, dx/dt=1, dy/dt=2, dz/dt=3. Entonces dw/dt=1(1)+1(2)+1(3)=6."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"Si F(x,y,z)=0 define z implícitamente como función de x,y, la regla de la cadena da la fórmula ∂z/∂x =:",
+    options:["−Fx/Fz (siempre que Fz≠0)", "Fx/Fy", "−Fx/Fy", "Fz/Fx"],
+    correct:0,
+    dificultad:"facil",
+    explain:"Derivando F(x,y,z(x,y))=0 respecto a x con la regla de la cadena: Fx + Fz·(∂z/∂x) = 0, de donde ∂z/∂x = −Fx/Fz."
+  },
+  // ---- Intermedio ----
+  {
+    topic:"Regla de la Cadena",
+    q:"La temperatura en un punto (x,y) es T(x,y). Un insecto se mueve según x=√(1+t), y=2+t/3. Se sabe que en el punto (2,3), Tx=4 y Ty=3. La razón de cambio de la temperatura que siente el insecto en el instante en que pasa por (2,3) es:",
+    options:["2 °C/s", "4 °C/s", "1 °C/s", "7 °C/s"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"x=2 ocurre en t=3. dx/dt=1/(2√(1+t)), que en t=3 da 1/4; dy/dt=1/3. dT/dt = Tx(dx/dt)+Ty(dy/dt) = 4(1/4)+3(1/3) = 1+1 = 2 °C/s."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"La demanda de un producto es Q(x,y)=200−10x²+20xy, donde x es su precio y y el precio de un competidor. En cierto mes x=10, y=15, con dx/dt=0.5 y dy/dt=0.8 ($/mes). La razón de cambio de la demanda en ese momento es:",
+    options:["210 unidades/mes", "100 unidades/mes", "160 unidades/mes", "50 unidades/mes"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"Qx=−20x+20y, que en (10,15) da 100. Qy=20x, que da 200. dQ/dt = Qx(dx/dt)+Qy(dy/dt) = 100(0.5)+200(0.8) = 50+160 = 210."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"Una compañía tiene producción q(k,l)=kl², con capital k(t)=2t² y trabajo l(t)=2t+5. La razón de cambio de la producción dq/dt en t=1, usando la regla de la cadena, es:",
+    options:["252", "196", "56", "28"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"En t=1: k=2, l=7, dk/dt=4, dl/dt=2. qk=l²=49, ql=2kl=28. dq/dt = qk(dk/dt)+ql(dl/dt) = 49(4)+28(2) = 196+56 = 252."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"En un triángulo, el lado x aumenta a 3 pulg/seg, el lado y disminuye a 2 pulg/seg, y el ángulo θ entre ellos crece a 0.05 rad/s. El área es A=(1/2)xy senθ. Cuando x=40, y=50, θ=π/6, la razón de cambio del área es:",
+    options:["≈ 60.8 pulg²/s", "≈ 37.5 pulg²/s", "≈ 17.5 pulg²/s", "≈ 43.3 pulg²/s"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"Ax=(1/2)y senθ=12.5, Ay=(1/2)x senθ=10, Aθ=(1/2)xy cosθ≈866.0. dA/dt=12.5(3)+10(−2)+866.0(0.05)≈37.5−20+43.3≈60.8 pulg²/s."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"Un cilindro tiene volumen V=πr²h. Si r crece a 0.5 cm/s y h decrece a 0.2 cm/s, cuando r=4cm y h=10cm, la razón de cambio del volumen es:",
+    options:["≈ 115.6 cm³/s", "≈ 251.3 cm³/s", "≈ 50.3 cm³/s", "≈ 135.7 cm³/s"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"Vr=2πrh≈251.3, Vh=πr²≈50.3. dV/dt = Vr(dr/dt)+Vh(dh/dt) ≈ 251.3(0.5)+50.3(−0.2) ≈ 125.7−10.1 ≈ 115.6 cm³/s."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"La ecuación x²+y²+z²=9 define z implícitamente cerca del punto (2,1,2). Usando la fórmula ∂z/∂x=−Fx/Fz con F=x²+y²+z²−9, el valor de ∂z/∂x en ese punto es:",
+    options:["−1", "1", "−2", "2"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"Fx=2x=4, Fz=2z=4. ∂z/∂x=−Fx/Fz=−4/4=−1."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"Para la misma superficie x²+y²+z²=9 en el punto (2,1,2), el valor de ∂z/∂y es:",
+    options:["−1/2", "1/2", "−1", "1"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"Fy=2y=2, Fz=2z=4. ∂z/∂y=−Fy/Fz=−2/4=−1/2."
+  },
+  // ---- Difícil ----
+  {
+    topic:"Regla de la Cadena",
+    q:"Sea w=xe^(y/z), con x=t², y=1−t, z=1+2t. Usando la regla de la cadena, dw/dt en t=0 es:",
+    options:["0", "e", "2e", "−e"],
+    correct:0,
+    dificultad:"dificil",
+    explain:"En t=0: x=0, dx/dt=2t=0. wy y wz tienen factor x=0, y el término de wx se multiplica por dx/dt=0. Los tres términos se anulan, así que dw/dt=0."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"Para u=x²−y², con x=3r−s, y=r+2s, la derivada parcial ∂u/∂r usando la regla de la cadena, expresada en términos de r y s, es:",
+    options:["16r − 10s", "18r − 6s", "6x − 2y", "8r − 2s"],
+    correct:0,
+    dificultad:"dificil",
+    explain:"∂u/∂r = ux(xr)+uy(yr) = (2x)(3)+(−2y)(1) = 6x−2y. Sustituyendo x=3r−s, y=r+2s y simplificando: 6(3r−s)−2(r+2s)=18r−6s−2r−4s=16r−10s."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"Para z=e^(xy), con x=s+2t, y=s/t, la derivada parcial ∂z/∂t evaluada en (s,t)=(1,1), usando la regla de la cadena, es:",
+    options:["−e³", "e³", "2e³", "−2e³"],
+    correct:0,
+    dificultad:"dificil",
+    explain:"zx=ye^(xy), zy=xe^(xy); xt=2, yt=−s/t². En (s,t)=(1,1): x=3,y=1,xy=3. dz/dt=2y·e^(xy)+(−s/t²)x·e^(xy)=e³(2(1)−3)=−e³."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"La ecuación xy + sen(x−y+z) = 0 define z implícitamente cerca del punto (0,0,0). Usando ∂z/∂x=−Fx/Fz, el valor de ∂z/∂x en ese punto es:",
+    options:["−1", "1", "0", "2"],
+    correct:0,
+    dificultad:"dificil",
+    explain:"Fx=y+cos(x−y+z), que en (0,0,0) da 0+cos(0)=1. Fz=cos(x−y+z), que también da 1. Entonces ∂z/∂x=−Fx/Fz=−1/1=−1."
+  },
+  {
+    topic:"Regla de la Cadena",
+    q:"Una función de producción Cobb-Douglas es q(k,l)=50k^0.4 l^0.6. Si k y l crecen a tasas relativas de 3% y 2% anual respectivamente, usando la regla de la cadena (derivada logarítmica) la tasa de crecimiento relativa de la producción dq/q es aproximadamente:",
+    options:["2.4% anual", "5% anual", "1.2% anual", "3.6% anual"],
+    correct:0,
+    dificultad:"dificil",
+    explain:"Tomando logaritmo: ln q = ln 50 + 0.4 ln k + 0.6 ln l. Derivando: dq/q = 0.4(dk/k) + 0.6(dl/l) = 0.4(3%) + 0.6(2%) = 1.2%+1.2% = 2.4%."
   }
 ];
-
-/* ================================================================
-   ÍCONOS SVG para las preguntas de "seleccionar la imagen correcta"
-   (bocetos tipo libro de texto: superficies 3D y sus curvas de nivel)
-   ================================================================ */
-const SHAPE_SVGS = {
-  paraboloid: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="60" cy="28" rx="46" ry="15" fill="rgba(5,247,255,0.10)" stroke="#05f7ff" stroke-width="2.4"/>
-    <path d="M14,28 C22,68 98,68 106,28" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
-    <ellipse cx="60" cy="50" rx="26" ry="8" fill="none" stroke="#05f7ff" stroke-width="1.3" opacity="0.55"/>
-    <line x1="60" y1="28" x2="60" y2="66" stroke="#ff0080" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.75"/>
-  </svg>`,
-  plane: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
-    <path d="M10,66 L60,28 L110,46 L60,84 Z" fill="rgba(5,247,255,0.10)" stroke="#05f7ff" stroke-width="2.4"/>
-    <path d="M27,59 L77,38" stroke="#05f7ff" stroke-width="1.2" opacity="0.6"/>
-    <path d="M42,73 L92,52" stroke="#05f7ff" stroke-width="1.2" opacity="0.6"/>
-    <path d="M35,43 L60,73" stroke="#05f7ff" stroke-width="1.2" opacity="0.6"/>
-    <path d="M56,35 L81,64" stroke="#05f7ff" stroke-width="1.2" opacity="0.6"/>
-  </svg>`,
-  sphere: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14,68 A46,44 0 0 1 106,68" fill="rgba(5,247,255,0.10)" stroke="#05f7ff" stroke-width="2.4"/>
-    <ellipse cx="60" cy="68" rx="46" ry="13" fill="none" stroke="#05f7ff" stroke-width="2.2"/>
-    <path d="M33,66 A27,11 0 0 1 87,66" fill="none" stroke="#05f7ff" stroke-width="1.2" opacity="0.55"/>
-  </svg>`,
-  cone: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="60" cy="28" rx="42" ry="14" fill="rgba(5,247,255,0.10)" stroke="#05f7ff" stroke-width="2.4"/>
-    <path d="M18,28 L60,84 L102,28" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
-    <ellipse cx="60" cy="50" rx="24" ry="8" fill="none" stroke="#05f7ff" stroke-width="1.2" opacity="0.5"/>
-  </svg>`,
-  saddle: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12,50 C30,18 90,18 108,50" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
-    <path d="M12,50 C30,82 90,82 108,50" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
-    <path d="M60,12 C42,38 42,62 60,88" fill="none" stroke="#ff0080" stroke-width="1.8" opacity="0.8"/>
-    <path d="M60,12 C78,38 78,62 60,88" fill="none" stroke="#ff0080" stroke-width="1.8" opacity="0.8"/>
-  </svg>`,
-  circles: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="60" cy="50" r="12" fill="none" stroke="#05f7ff" stroke-width="2.2"/>
-    <circle cx="60" cy="50" r="24" fill="none" stroke="#05f7ff" stroke-width="2.2" opacity="0.75"/>
-    <circle cx="60" cy="50" r="36" fill="none" stroke="#05f7ff" stroke-width="2.2" opacity="0.5"/>
-    <circle cx="60" cy="50" r="2.6" fill="#ff0080"/>
-  </svg>`,
-  lines: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
-    <line x1="6" y1="82" x2="46" y2="12" stroke="#05f7ff" stroke-width="2.4"/>
-    <line x1="30" y1="88" x2="70" y2="18" stroke="#05f7ff" stroke-width="2.4" opacity="0.85"/>
-    <line x1="54" y1="92" x2="94" y2="22" stroke="#05f7ff" stroke-width="2.4" opacity="0.7"/>
-    <line x1="78" y1="92" x2="115" y2="28" stroke="#05f7ff" stroke-width="2.4" opacity="0.55"/>
-  </svg>`,
-  parabolas: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
-    <path d="M10,30 Q60,92 110,30" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
-    <path d="M14,12 Q60,68 106,12" fill="none" stroke="#05f7ff" stroke-width="2.4" opacity="0.75"/>
-    <path d="M22,-4 Q60,44 98,-4" fill="none" stroke="#05f7ff" stroke-width="2.4" opacity="0.55"/>
-  </svg>`,
-  hyperbolas: `<svg viewBox="0 0 120 100" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
-    <path d="M60,2 C40,30 40,70 60,98" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
-    <path d="M60,2 C80,30 80,70 60,98" fill="none" stroke="#05f7ff" stroke-width="2.4"/>
-    <path d="M8,50 C28,34 28,66 8,50" fill="none" stroke="#ff0080" stroke-width="2.2" opacity="0.8"/>
-    <path d="M112,50 C92,34 92,66 112,50" fill="none" stroke="#ff0080" stroke-width="2.2" opacity="0.8"/>
-  </svg>`
-};
-
-// nombres legibles de cada forma, para mostrarlos en el mini análisis final
-const SHAPE_LABELS = {
-  paraboloid:"Paraboloide (taza hacia arriba)",
-  plane:"Plano",
-  sphere:"Media esfera",
-  cone:"Cono",
-  saddle:"Silla de montar (paraboloide hiperbólico)",
-  circles:"Circunferencias concéntricas",
-  lines:"Rectas paralelas",
-  parabolas:"Parábolas",
-  hyperbolas:"Hipérbolas"
-};
-
-/* ================================================================
-   PREGUNTAS DE IMAGEN: seleccionar la gráfica / curvas de nivel
-   correcta en vez de una opción de texto (misma mecánica de pit)
-   ================================================================ */
-const IMAGE_QUESTION_BANK = [
-  {
-    type:"image",
-    topic:"Gráfica de funciones de dos variables",
-    q:"¿Cuál de las siguientes imágenes representa la gráfica de f(x,y) = x² + y²?",
-    options:["plane","paraboloid","saddle","sphere"],
-    correct:1,
-    dificultad:"facil",
-    explain:"z = x² + y² crece igual en todas las direcciones desde el origen, formando una superficie en forma de taza: un paraboloide."
-  },
-  {
-    type:"image",
-    topic:"Gráfica de funciones de dos variables",
-    q:"¿Cuál imagen representa la gráfica de un plano z = ax + by + c?",
-    options:["cone","sphere","plane","paraboloid"],
-    correct:2,
-    dificultad:"facil",
-    explain:"Una expresión lineal en x e y siempre define una superficie plana, sin curvatura."
-  },
-  {
-    type:"image",
-    topic:"Gráfica de funciones de dos variables",
-    q:"¿Cuál imagen representa la gráfica de f(x,y) = √(1 − x² − y²)?",
-    options:["cone","sphere","plane","saddle"],
-    correct:1,
-    dificultad:"facil",
-    explain:"Elevando al cuadrado se llega a x² + y² + z² = 1 (una esfera de radio 1); como z ≥ 0, es solo la mitad superior de esa esfera."
-  },
-  {
-    type:"image",
-    topic:"Gráfica de funciones de dos variables",
-    q:"¿Cuál imagen representa un paraboloide hiperbólico (silla de montar), f(x,y) = x² − y²?",
-    options:["paraboloid","sphere","saddle","plane"],
-    correct:2,
-    dificultad:"facil",
-    explain:"En esta superficie z sube en la dirección de x y baja en la dirección de y, creando la forma de silla de montar característica del paraboloide hiperbólico."
-  },
-  {
-    type:"image",
-    topic:"Gráfica de funciones de dos variables",
-    q:"¿Cuál imagen representa el cono z = √(x² + y²)?",
-    options:["sphere","paraboloid","cone","plane"],
-    correct:2,
-    dificultad:"facil",
-    explain:"z = √(x² + y²) crece de forma lineal (no cuadrática) al alejarse del origen, generando las líneas rectas de un cono en vez de la curva de un paraboloide."
-  },
-  {
-    type:"image",
-    topic:"Curvas y superficies de nivel",
-    q:"¿Cuál imagen representa las curvas de nivel de f(x,y) = x² + y² (para distintos k > 0)?",
-    options:["lines","circles","parabolas","hyperbolas"],
-    correct:1,
-    dificultad:"facil",
-    explain:"Haciendo x² + y² = k se obtiene la ecuación de una circunferencia de radio √k; para distintos k son circunferencias concéntricas."
-  },
-  {
-    type:"image",
-    topic:"Curvas y superficies de nivel",
-    q:"¿Cuál imagen representa las curvas de nivel de un plano f(x,y) = x + y?",
-    options:["circles","lines","hyperbolas","parabolas"],
-    correct:1,
-    dificultad:"facil",
-    explain:"x + y = k es la ecuación de una recta para cada valor de k, así que las curvas de nivel de un plano son rectas paralelas."
-  },
-  {
-    type:"image",
-    topic:"Curvas y superficies de nivel",
-    q:"¿Cuál imagen representa las curvas de nivel de f(x,y) = x² − y² (silla de montar)?",
-    options:["circles","parabolas","hyperbolas","lines"],
-    correct:2,
-    dificultad:"facil",
-    explain:"x² − y² = k es la ecuación de una hipérbola para k ≠ 0 (y de dos rectas cuando k = 0), típico de la silla de montar."
-  }
-];
-
-QUESTION_BANK.push(...IMAGE_QUESTION_BANK);
-
-/* ================================================================
-   PREGUNTAS CONTEXTUALIZADAS (dominio, rango, curvas de nivel)
-   Problemas de aplicación con escenarios reales (drones, antenas,
-   estructuras, cultivos, industria...), en dos niveles de dificultad:
-   intermedio y difícil. Las 24 preguntas anteriores quedan como "facil".
-   ================================================================ */
-const WORD_PROBLEM_QUESTION_BANK = [
-  // ---- Dominio ----
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un dron de inspección agrícola debe mantenerse dentro de un radio de 20 m desde la estación base para no perder el control de la señal. Si f(x,y) = √(400 − x² − y²) modela la altitud máxima segura en la posición (x,y), ¿cuál es el dominio de f?",
-    options:["x² + y² < 400", "x² + y² ≤ 400", "x² + y² ≥ 400", "x + y ≤ 400"],
-    correct:1,
-    explain:"El radicando debe ser ≥ 0: 400 − x² − y² ≥ 0, es decir x² + y² ≤ 400. Es el disco cerrado de radio 20 alrededor de la estación base."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"En una subestación eléctrica, la potencia transferida entre dos nodos con potenciales x e y se modela con f(x,y) = 500 / (x − y), que se indefine cuando ambos nodos tienen el mismo potencial. ¿Para qué valores de (x,y) está definida f?",
-    options:["x = y", "x > y", "x, y ≠ 0", "x ≠ y"],
-    correct:3,
-    explain:"El denominador no puede ser cero: x − y ≠ 0, es decir x ≠ y. Si ambos nodos tienen el mismo potencial no hay diferencia de voltaje y el modelo se indefine (división entre cero)."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un sensor de iluminación urbana solo entrega una lectura válida fuera de un radio de 1 m alrededor del poste de luz, con f(x,y) = ln(x² + y² − 1). ¿Cuál es el dominio de f?",
-    options:["x² + y² > 1", "x² + y² ≥ 1", "x² + y² < 1", "x² + y² ≠ 1"],
-    correct:0,
-    explain:"El argumento del logaritmo debe ser estrictamente mayor que 0: x² + y² − 1 > 0, es decir x² + y² > 1. Dentro del círculo de radio 1, o justo en su borde, la lectura no está definida."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"dificil",
-    q:"Un ingeniero calcula un índice de estabilidad estructural con f(x,y) = √(x − y) / (x + y), donde x es la carga sobre una columna y y la carga sobre una viga (toneladas). ¿Cuál es el dominio de f?",
-    options:["x ≥ y", "x > y y x + y ≠ 0", "x ≥ y y x + y ≠ 0", "x ≤ y y x + y ≠ 0"],
-    correct:2,
-    explain:"El radicando debe ser ≥ 0 (x ≥ y) y el denominador no puede ser cero (x + y ≠ 0); ambas condiciones deben cumplirse a la vez."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un sensor de humedad en un cultivo solo funciona correctamente por debajo de la sombra parabólica y = x² proyectada por una hilera de árboles, con f(x,y) = 1 / √(x² − y). ¿En qué región del campo la lectura es válida?",
-    options:["y ≤ x²", "y > x²", "y = x²", "y < x²"],
-    correct:3,
-    explain:"Como el radicando está en un denominador, debe ser estrictamente mayor que 0: x² − y > 0, es decir y < x², la región estrictamente por debajo de la parábola."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Una constructora modela la capacidad de carga de un lote con f(x,y) = ln(9 − x − y), donde x e y son las distancias a los linderos (decenas de metros) y el lote tiene una restricción total de 9 unidades combinadas. ¿Cuál es el dominio de f?",
-    options:["x + y ≤ 9", "x + y < 9", "x + y > 9", "x + y ≠ 9"],
-    correct:1,
-    explain:"El argumento del logaritmo debe ser mayor que 0: 9 − x − y > 0, es decir x + y < 9."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un software topográfico combina dos pendientes del terreno x e y con f(x,y) = √(xy), que solo es calculable si ambas pendientes apuntan en el mismo sentido. ¿En qué región del plano está definida f?",
-    options:["x ≥ 0 y y ≥ 0 solamente", "xy > 0", "xy ≥ 0 (x, y del mismo signo, o alguna es 0)", "x = y"],
-    correct:2,
-    explain:"El radicando debe ser ≥ 0: xy ≥ 0, lo que ocurre cuando x y y tienen el mismo signo (o alguna es 0) — primer y tercer cuadrante, incluyendo los ejes."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"En un valle topográfico limitado por y = x², un sensor de humedad mide f(x,y) = x / √(y − x²). ¿En qué región del terreno la lectura es válida?",
-    options:["y > x²", "y ≥ x²", "y < x²", "y ≠ x²"],
-    correct:0,
-    explain:"El radicando está en un denominador, así que debe ser estrictamente mayor que 0: y − x² > 0, es decir y > x², la región estrictamente por encima de la parábola (dentro del valle)."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"dificil",
-    q:"Un dron submarino mide la profundidad de un lago circular de 5 km de radio, pero pierde la señal por completo sobre un arrecife anular a 3 km del centro. El modelo es f(x,y) = √(25 − x² − y²) / (x² + y² − 9). ¿Cuál es el dominio completo de f?",
-    options:["x² + y² ≤ 25", "x² + y² ≤ 25 y x² + y² ≠ 9", "x² + y² < 25 y x² + y² ≠ 9", "9 ≤ x² + y² ≤ 25"],
-    correct:1,
-    explain:"Por la raíz, x² + y² ≤ 25 (dentro del lago); por el denominador, x² + y² ≠ 9 (fuera del arrecife). El dron puede medir en todo el lago excepto exactamente sobre el anillo del arrecife."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Una antena tiene un 'punto muerto' de señal exactamente a 2 km de la torre, donde f(x,y) = 1 / (x² + y² − 4) se indefine. ¿Cuál es el dominio de f?",
-    options:["x² + y² < 4", "x² + y² > 4", "x² + y² ≠ 2", "x² + y² ≠ 4"],
-    correct:3,
-    explain:"El denominador no puede ser cero: x² + y² − 4 ≠ 0, es decir x² + y² ≠ 4 (ojo: la circunferencia excluida tiene radio 2, ya que √4 = 2)."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un software estructural calcula la resistencia de una viga con f(x,y) = √(4 − x²) + y, donde x es la posición horizontal (limitada físicamente a −2 ≤ x ≤ 2) y y la altura de análisis, sin restricción. ¿Cuál es el dominio de f?",
-    options:["−2 ≤ x ≤ 2, y ∈ ℝ", "−2 ≤ x ≤ 2, y ≥ 0", "x ≤ 2, y ∈ ℝ", "x² ≤ 4, y² ≤ 4"],
-    correct:0,
-    explain:"Solo x está dentro de una raíz: 4 − x² ≥ 0 da −2 ≤ x ≤ 2. La variable y no aparece en ninguna raíz, denominador o logaritmo, así que es libre en todo ℝ."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un modelo de rendimiento agrícola combina agua x y fertilizante y (cantidades que no pueden ser negativas) con f(x,y) = √x + √y. ¿Cuál es el dominio de f?",
-    options:["x > 0 y y > 0", "x ≥ 0 o y ≥ 0", "x ≥ 0 y y ≥ 0", "x + y ≥ 0"],
-    correct:2,
-    explain:"Cada raíz exige su propio radicando ≥ 0 de forma independiente: x ≥ 0 y y ≥ 0 deben cumplirse simultáneamente (primer cuadrante cerrado)."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"dificil",
-    q:"En un proceso de combustión, la eficiencia se modela con f(x,y) = ln(x / y), donde x es el flujo de oxidante y y el de combustible (kg/s). ¿Cuál es el dominio matemático de f?",
-    options:["x > 0 y y > 0", "x ≠ 0 y y ≠ 0", "x > y, y ≠ 0", "(x > 0 y y > 0) o (x < 0 y y < 0)"],
-    correct:3,
-    explain:"El argumento del logaritmo debe ser positivo: x/y > 0, lo cual ocurre si numerador y denominador tienen el mismo signo. Ese es el dominio matemático completo; en la práctica, como oxidante y combustible son cantidades físicas, solo tiene sentido real la región x > 0, y > 0."
-  },
-
-  // ---- Rango ----
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un invernadero modela su temperatura con f(x,y) = 28 − x² − y², válida solo dentro del área circular de estudio x² + y² ≤ 25 (radio 5 m desde el centro de ventilación). ¿Cuál es el rango de temperaturas dentro de esa región?",
-    options:["(−∞, 28]", "[3, 28]", "[23, 28]", "[0, 25]"],
-    correct:1,
-    explain:"El máximo (28) ocurre en el centro, donde x²+y²=0. El mínimo ocurre en el borde del área permitida (x²+y²=25), dando f=28−25=3. Al ser continua, f toma todos los valores entre 3 y 28."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un plato satelital tiene intensidad de señal normalizada f(x,y) = 50 / (x² + y² + 1), máxima en el punto focal y decreciente sin apagarse nunca del todo. ¿Cuál es el rango de intensidad?",
-    options:["(0, 50]", "[0, 50]", "(0, ∞)", "(0, 25]"],
-    correct:0,
-    explain:"El denominador nunca baja de 1, así que el máximo de f es 50 (en el punto focal); al alejarse, f se acerca a 0 sin llegar nunca a valer exactamente 0."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Una app de mapas calcula la distancia en línea recta a una estación GPS con f(x,y) = √(x² + y²). ¿Cuál es el rango de distancias que puede reportar?",
-    options:["(0, ∞)", "(−∞, ∞)", "[0, ∞)", "[0, 1]"],
-    correct:2,
-    explain:"El mínimo de x²+y² es 0 (en la estación misma), dando f=0; al alejarse, la distancia crece sin límite. Una distancia nunca es negativa, pero sí puede ser exactamente 0."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un software estructural modela el estrés relativo de una placa con f(x,y) = x² + y² − 4x − 6y + 13. ¿Cuál es el rango de estrés en la placa?",
-    options:["[13, ∞)", "(−∞, 0]", "[−13, ∞)", "[0, ∞)"],
-    correct:3,
-    explain:"Completando cuadrados, f = (x−2)² + (y−3)², cuyo mínimo es 0 (en el punto (2,3)) y sin límite superior."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"dificil",
-    q:"Una planta industrial modela el rendimiento de un proceso químico con f(x,y) = −2x² − 2y² + 8x − 4y − 1, según dos parámetros de control x e y. ¿Cuál es el rango de rendimiento?",
-    options:["(−∞, 40]", "(−∞, 9]", "[9, ∞)", "(−∞, −1]"],
-    correct:1,
-    explain:"Completando cuadrados, f = −2(x−2)² − 2(y+1)² + 9, cuyo máximo es 9 (en (2,−1)); fuera de ese punto óptimo el rendimiento cae sin límite."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Una cúpula geodésica de radio 6 m tiene altura f(x,y) = √(36 − x² − y²), máxima en el centro y nula en el borde. ¿Cuál es el rango de alturas?",
-    options:["[0, 36]", "(0, 6]", "[0, 6]", "[−6, 6]"],
-    correct:2,
-    explain:"El máximo ocurre en el centro (0,0): f=√36=6. El mínimo ocurre en el borde x²+y²=36: f=0."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un paso de montaña en forma de silla de montar tiene diferencia de elevación f(x,y) = x² − y². ¿Cuál es el rango de esa diferencia?",
-    options:["(−∞, ∞)", "[0, ∞)", "(−∞, 0]", "[−1, 1]"],
-    correct:0,
-    explain:"Con y=0, f(x,0)=x² crece sin límite hacia +∞; con x=0, f(0,y)=−y² decrece sin límite hacia −∞. El rango es todo ℝ."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"dificil",
-    q:"La intensidad de señal de un router Wi-Fi decrece con la distancia según f(x,y) = 1 / (x² + y² + 1), sin llegar nunca exactamente a cero. ¿Cuál es el rango de intensidad?",
-    options:["[0, 1]", "(0, 1]", "(0, ∞)", "[1, ∞)"],
-    correct:1,
-    explain:"El denominador nunca baja de 1, así que el máximo de f es 1 (en el router mismo); al alejarse, f se acerca a 0 sin llegar nunca a serlo."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un tanque cónico invertido de radio 4 m y profundidad máxima 4 m se modela con f(x,y) = 4 − √(x² + y²) sobre su base circular. ¿Cuál es el rango de profundidad?",
-    options:["[−4, 4]", "(0, 4)", "[0, 16]", "[0, 4]"],
-    correct:3,
-    explain:"El máximo (4) ocurre en el centro; el mínimo (0) ocurre en el borde de la base, donde x²+y²=16."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un contaminante se dispersa desde un punto de emisión con concentración f(x,y) = e^(−(x² + y²)), máxima en el origen y decreciente sin llegar nunca a cero. ¿Cuál es el rango de concentración?",
-    options:["(0, 1]", "[0, 1]", "(0, ∞)", "[0, e]"],
-    correct:0,
-    explain:"El exponente −(x²+y²) es siempre ≤ 0 con máximo 0 en el origen, dando f=e⁰=1 como máximo; la exponencial nunca toma el valor 0."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Un modelo agrícola predice el rendimiento de un cultivo con f(x,y) = −(x − 3)² − 2(y + 1)² + 40, según desviaciones de las dosis óptimas de riego y nutrientes. ¿Cuál es el rango de rendimiento?",
-    options:["[40, ∞)", "(−∞, 3]", "(−∞, 40]", "[0, 40]"],
-    correct:2,
-    explain:"Ambos términos cuadráticos son ≤ 0, así que el máximo (40) ocurre exactamente en el punto óptimo (3,−1); alejarse de él reduce el rendimiento sin límite."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"dificil",
-    q:"Una torre de comunicaciones de 3 m de altura tiene cables tensores hasta puntos (x,y) del suelo, con longitud f(x,y) = √(x² + y² + 9). ¿Cuál es el rango de longitudes posibles?",
-    options:["[0, ∞)", "(3, ∞)", "[9, ∞)", "[3, ∞)"],
-    correct:3,
-    explain:"El radicando x²+y²+9 nunca baja de 9, así que la longitud mínima es √9=3 (anclaje justo en la base); al alejarse, la longitud crece sin límite."
-  },
-  {
-    topic:"Dominio y Rango", dificultad:"intermedio",
-    q:"Una lámpara sobre una mesa de trabajo ilumina con f(x,y) = 50 / (x² + y² + 2), máxima justo debajo de ella. ¿Cuál es el rango de intensidad lumínica?",
-    options:["(0, 50]", "(0, 25]", "[0, 25]", "[2, 25]"],
-    correct:1,
-    explain:"El denominador nunca baja de 2, así que el máximo de f es 50/2=25 (justo bajo la lámpara); al alejarse, f se acerca a 0 sin llegar a serlo."
-  },
-
-  // ---- Curvas y superficies de nivel ----
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
-    q:"En un invernadero con temperatura f(x,y) = x² + y², los técnicos quieren instalar un anillo de sensores exactamente en la curva de 25 °C. ¿Qué curva es y cuál es su ecuación?",
-    options:["Circunferencia: x² + y² = 25", "Elipse: x²/25 + y²/25 = 1", "Recta: x + y = 25", "Circunferencia: x² + y² = 5"],
-    correct:0,
-    explain:"Al igualar la función al nivel deseado, x² + y² = 25 es una circunferencia centrada en el origen de radio √25 = 5."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
-    q:"Un topógrafo modela la elevación de una colina con f(x,y) = x² + 4y². ¿Qué curva de nivel se forma a una elevación de 16?",
-    options:["Circunferencia: x² + y² = 16", "Elipse: x²/4 + y²/16 = 1", "Elipse: x²/16 + y²/4 = 1", "Parábola: y = 16 − x²"],
-    correct:2,
-    explain:"Igualando y dividiendo entre 16: x²/16 + y²/4 = 1, una elipse con semieje 4 en x y 2 en y — la colina sube más lento en x que en y."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
-    q:"Un dron de vigilancia debe mantener una separación vertical constante de 3 m sobre un terreno cuyo perfil es y = x². Con f(x,y) = y − x² (altura real menos elevación del terreno), ¿qué curva debe seguir la altura y del dron en función de x?",
-    options:["Parábola: y = x² − 3", "Circunferencia: x² + y² = 3", "Recta: y = 3x", "Parábola: y = x² + 3"],
-    correct:3,
-    explain:"Igualando f al nivel 3: y − x² = 3, es decir y = x² + 3 — la trayectoria del dron es el mismo perfil del terreno, desplazado 3 unidades hacia arriba."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"dificil",
-    q:"El esfuerzo relativo de una viga sometida a cargas cruzadas se modela como f(x,y) = x² − y² (tipo silla de montar). ¿Qué curva forman los puntos de esfuerzo igual a 4?",
-    options:["Elipse: x²/4 + y²/4 = 1", "Hipérbola: x²/4 − y²/4 = 1", "Circunferencia: x² + y² = 4", "Dos rectas: y = x, y = −x"],
-    correct:1,
-    explain:"Igualando y dividiendo entre 4: x²/4 − y²/4 = 1, una hipérbola con vértices en (±2,0) — típica de superficies tipo silla de montar."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
-    q:"El costo de fertilizar un campo con nitrógeno x y fósforo y (kg, ambos ≥ 0) es f(x,y) = 2x + 3y (miles de pesos). ¿Qué figura forman las combinaciones de costo igual a 12?",
-    options:["Parábola: y = 12 − 2x²", "Circunferencia: x² + y² = 12", "Recta: 2x + 3y = 12", "Hipérbola: xy = 12"],
-    correct:2,
-    explain:"Como f es lineal, su curva de nivel siempre es una recta: 2x + 3y = 12. Aun así, solo tiene sentido físico la porción de esa recta en el primer cuadrante (x≥0, y≥0), ya que ambas cantidades son físicas."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
-    q:"Un radar mide distancia con f(x,y) = √(x² + y²). ¿Qué curva marca el límite de cobertura efectiva a 7 km?",
-    options:["Circunferencia: x² + y² = 49", "Circunferencia: x² + y² = 7", "Elipse: x²/49 + y²/49 = 1", "Recta: x + y = 7"],
-    correct:0,
-    explain:"Igualando √(x²+y²)=7 y elevando al cuadrado ambos lados: x² + y² = 49 — una circunferencia de radio 7 (ojo con el error común de dejar el radio en 7)."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
-    q:"Una cúpula geodésica tiene altura f(x,y) = 9 − x² − y². ¿Qué curva forma el contorno donde la altura es de 5 m?",
-    options:["Circunferencia: x² + y² = 5", "Circunferencia: x² + y² = 14", "Elipse: x²/9 + y²/5 = 1", "Circunferencia: x² + y² = 4"],
-    correct:3,
-    explain:"Igualando 9 − x² − y² = 5 y despejando: x² + y² = 4, una circunferencia de radio 2 (más pequeña que la base, porque a mayor altura el contorno se acerca al centro)."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"dificil",
-    q:"Una fuente de calor industrial desplazada del centro se modela con f(x,y) = x² + y² − 6x + 9. ¿Qué curva forma la isoterma de nivel 16, y dónde está centrada?",
-    options:["Circunferencia x² + y² = 16, centrada en el origen", "Circunferencia (x − 3)² + y² = 16, centrada en (3, 0)", "Circunferencia (x + 3)² + y² = 16, centrada en (−3, 0)", "Elipse (x − 3)²/16 + y²/9 = 1"],
-    correct:1,
-    explain:"x²−6x+9 es el trinomio cuadrado perfecto (x−3)², así que f=(x−3)²+y². Igualando a 16: circunferencia de radio 4 centrada en (3,0), no en el origen."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"dificil",
-    q:"Una antena direccional irradia de forma elíptica y desplazada del origen, con f(x,y) = 4x² + y² − 8x + 4. ¿Qué curva de nivel forma su patrón de cobertura a nivel 16?",
-    options:["Elipse: (x − 1)²/4 + y²/16 = 1", "Circunferencia: (x − 1)² + y² = 16", "Elipse: (x − 1)²/16 + y²/4 = 1", "Hipérbola: (x − 1)²/4 − y²/16 = 1"],
-    correct:0,
-    explain:"Completando cuadrado en x: f = 4(x−1)² + y². Igualando a 16 y dividiendo entre 16: (x−1)²/4 + y²/16 = 1, una elipse centrada en (1,0), alargada en la dirección y."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
-    q:"La producción conjunta de dos máquinas se modela con f(x,y) = xy (horas x, y ≥ 0). ¿Qué curva forman las combinaciones que producen exactamente 6 unidades?",
-    options:["Recta: x + y = 6", "Circunferencia: x² + y² = 6", "Hipérbola: xy = 6", "Parábola: y = 6/x²"],
-    correct:2,
-    explain:"Igualando f al nivel: xy = 6, una hipérbola rectangular con asíntotas en los ejes. Como x, y son horas (cantidades físicas), en la práctica solo tiene sentido la rama del primer cuadrante."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
-    q:"Un pivote de riego distribuye agua de forma elíptica con f(x,y) = x²/4 + y²/9. ¿Qué curva delimita la zona de riego uniforme a nivel 4, y cuáles son sus semiejes?",
-    options:["Elipse x²/4 + y²/9 = 1, semiejes 2 y 3", "Elipse x²/16 + y²/36 = 1, semiejes 4 y 6", "Circunferencia x²+y²=4", "Elipse x²/8 + y²/18 = 1, semiejes ≈2.8 y ≈4.2"],
-    correct:1,
-    explain:"Igualando a 4 y dividiendo entre 4: x²/16 + y²/36 = 1, una elipse con semieje 4 en x y 6 en y."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
-    q:"Un reflector parabólico satelital tiene superficie f(x,y) = y² − 4x. ¿Qué curva forma su sección transversal en el nivel base (0)?",
-    options:["Circunferencia: x² + y² = 4", "Parábola: x² = 4y", "Recta: y = 4x", "Parábola: y² = 4x"],
-    correct:3,
-    explain:"Igualando a 0: y² − 4x = 0, es decir y² = 4x, la parábola que abre hacia la derecha y concentra las señales paralelas en un punto focal."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"intermedio",
-    q:"En un lago, la profundidad relativa (respecto a un punto de referencia desplazado) se modela con f(x,y) = x² + y² + 2x − 4y. ¿Qué curva forma la línea de profundidad −1, y dónde está centrada?",
-    options:["Circunferencia (x + 1)² + (y − 2)² = 4, centrada en (−1, 2)", "Circunferencia x² + y² = 1, centrada en el origen", "Circunferencia (x − 1)² + (y + 2)² = 4, centrada en (1, −2)", "Elipse (x+1)²/4 + (y−2)²/5 = 1"],
-    correct:0,
-    explain:"Completando cuadrados: f=(x+1)²+(y−2)²−5. Igualando a −1: (x+1)²+(y−2)²=4, circunferencia de radio 2 centrada en (−1,2), no en el origen."
-  },
-  {
-    topic:"Curvas y superficies de nivel", dificultad:"dificil",
-    q:"Entre dos puntos de anclaje eléctrico, la tensión relativa se modela con f(x,y) = x² − y² + 2y. ¿Qué curva forma el patrón de tensión en el nivel 3, y qué tipo de cónica es?",
-    options:["Elipse: x² + (y − 1)² = 2", "Circunferencia: x² + (y − 1)² = 3", "Hipérbola: x² − (y − 1)² = 2", "Hipérbola: x² − (y + 1)² = 2"],
-    correct:2,
-    explain:"Completando cuadrado en y: f = x² − (y−1)² + 1. Igualando a 3: x² − (y−1)² = 2, una hipérbola centrada en (0,1), típica de sistemas con dos focos opuestos."
-  }
-];
-
-QUESTION_BANK.push(...WORD_PROBLEM_QUESTION_BANK);
-
-/* ================================================================
-   BANCO DE PREGUNTAS: SECCIONES CÓNICAS Y SUPERFICIES CUÁDRICAS
-   (completar cuadrados, identificar centro/vértices/focos/asíntotas/
-   directriz, superficies cuádricas en 3D, y aplicaciones reales)
-   ================================================================ */
-const CONIC_QUESTION_BANK = [
-  {
-    topic:"Secciones Cónicas", dificultad:"facil",
-    q:"Al completar el cuadrado en x² + y² − 6x + 8y + 9 = 0, ¿qué tipo de sección cónica se obtiene?",
-    options:["Circunferencia", "Elipse", "Hipérbola", "Parábola"],
-    correct:0,
-    explain:"Completando cuadrados: (x−3)² + (y+4)² = 16. Como ambos términos cuadráticos tienen el mismo coeficiente y signo, es una circunferencia (centro (3,−4), radio 4)."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"facil",
-    q:"La ecuación 4x² + 9y² = 36 representa...",
-    options:["Una elipse", "Una circunferencia", "Una hipérbola", "Una parábola"],
-    correct:0,
-    explain:"Dividiendo entre 36: x²/9 + y²/4 = 1. Los denominadores son distintos (9≠4), así que es una elipse, no una circunferencia."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"facil",
-    q:"¿Cuál es la diferencia clave, en la ecuación canónica, entre una elipse y una hipérbola?",
-    options:["La hipérbola tiene un signo menos entre los términos cuadráticos", "La elipse siempre tiene un semieje negativo", "La hipérbola no tiene centro definido", "La elipse solo existe en el espacio 3D"],
-    correct:0,
-    explain:"Elipse: x²/a² + y²/b² = 1 (suma). Hipérbola: x²/a² − y²/b² = 1 (resta). Ese signo menos es lo que abre las dos ramas."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"facil",
-    q:"La ecuación (x − 2)² = 12(y + 1) representa...",
-    options:["Una parábola vertical", "Una elipse", "Una hipérbola", "Una circunferencia"],
-    correct:0,
-    explain:"La forma (x−h)² = 4p(y−k) corresponde a una parábola que abre hacia arriba o abajo (vertical), con vértice en (h,k)=(2,−1)."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"facil",
-    q:"En el espacio, la ecuación x² + y² + z² = 25 representa...",
-    options:["Una esfera de radio 5", "Un paraboloide", "Un cono", "Un plano"],
-    correct:0,
-    explain:"Es la ecuación estándar de una esfera centrada en el origen con radio √25 = 5."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"facil",
-    q:"En una antena satelital con forma de parábola, ¿qué representa físicamente el foco?",
-    options:["El punto donde se concentran las señales reflejadas por el plato", "El punto más alejado del plato", "El borde exterior del plato", "El centro geométrico de la Tierra"],
-    correct:0,
-    explain:"Por la propiedad reflectora de la parábola, todo rayo paralelo al eje que llega al plato se refleja hacia el foco, donde se coloca el receptor."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"intermedio",
-    q:"Una elipse tiene vértices en (2, 5) y (2, −3), y focos en (2, 3) y (2, −1). ¿Cuál es la longitud de su eje mayor (2a)?",
-    options:["8", "4", "6", "10"],
-    correct:0,
-    explain:"La distancia entre los vértices es |5−(−3)| = 8, y esa distancia es precisamente 2a, la longitud del eje mayor."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"intermedio",
-    q:"Para la parábola (y + 1)² = 8(x − 2), ¿cuál es la ecuación de su directriz?",
-    options:["x = 0", "x = 4", "y = 0", "x = −2"],
-    correct:0,
-    explain:"4p=8 → p=2. El vértice está en (2,−1) y abre hacia la derecha, así que la directriz es una recta vertical a la izquierda del vértice: x = 2 − 2 = 0."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"intermedio",
-    q:"Al completar el cuadrado en 4x² − y² − 8x − 4y − 4 = 0, ¿cuáles son las coordenadas del centro de la hipérbola resultante?",
-    options:["(1, −2)", "(−1, 2)", "(2, −1)", "(1, 2)"],
-    correct:0,
-    explain:"Agrupando: 4(x²−2x) − (y²+4y) = 4 → 4(x−1)² − (y+2)² = 4. El centro de la hipérbola es (1, −2)."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"intermedio",
-    q:"La ecuación x² − y² − z = 0 corresponde a una superficie cuádrica llamada...",
-    options:["Paraboloide hiperbólico (silla de montar)", "Paraboloide elíptico", "Elipsoide", "Esfera"],
-    correct:0,
-    explain:"Al despejar z = x² − y², la mezcla de un término positivo y uno negativo genera la clásica superficie de silla de montar."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"intermedio",
-    q:"Un puente colgante tiene forma parabólica: sus torres miden 80 pies de alto, están separadas 400 pies, y el cable toca la carretera en el punto medio. Tomando el vértice en el origen, ¿cuál es la ecuación de la parábola?",
-    options:["x² = 500y", "x² = 320y", "y² = 500x", "x² = 125y"],
-    correct:0,
-    explain:"Cada torre está a x=200 del vértice, con altura y=80. Usando x²=4py: 200²=4p(80) → 40000=320p → 4p=500, así que x²=500y."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"intermedio",
-    q:"¿Cuál es la excentricidad de cualquier circunferencia?",
-    options:["0", "1", "Mayor que 1", "No está definida"],
-    correct:0,
-    explain:"La excentricidad mide qué tan 'alargada' es una cónica. Como en la circunferencia c=0 (los focos coinciden con el centro), e = c/a = 0."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"intermedio",
-    q:"En una elipse, si el semieje mayor es a = 5 y la distancia focal es c = 3, ¿cuánto vale el semieje menor b?",
-    options:["4", "2", "8", "6"],
-    correct:0,
-    explain:"Por la relación b² = a² − c²: b² = 25 − 9 = 16, así que b = 4."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"intermedio",
-    q:"Una galería susurrante (sala elíptica) tiene semieje mayor de 25 pies y semieje menor de 20 pies. ¿A qué distancia del centro deben ubicarse las dos personas (en los focos) para que el susurro de una se escuche claramente en la otra?",
-    options:["15 pies", "5 pies", "45 pies", "20 pies"],
-    correct:0,
-    explain:"c² = a² − b² = 25² − 20² = 625 − 400 = 225, así que c = 15 pies: esa es la distancia del centro a cada foco."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"dificil",
-    q:"Dos estaciones de radio (sistema tipo LORAN) están separadas 260 millas. Un barco detecta una diferencia de distancias a las estaciones de 100 millas, ubicándose sobre una rama de hipérbola. ¿Cuál es el valor de 'a' (semieje transverso) de esa hipérbola?",
-    options:["50", "100", "130", "30"],
-    correct:0,
-    explain:"En una hipérbola, la diferencia de distancias a los focos es constante e igual a 2a. Como 2a = 100, entonces a = 50."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"dificil",
-    q:"Al completar el cuadrado en x² + y² + z² + 4x − 6y + 2z − 2 = 0, ¿qué superficie se obtiene y cuál es su radio?",
-    options:["Esfera de radio 4", "Esfera de radio 16", "Elipsoide con semieje 8", "Esfera de radio 2"],
-    correct:0,
-    explain:"(x+2)² + (y−3)² + (z+1)² = 4 + 9 + 1 + 2 = 16. Como 16 = 4², es una esfera de radio 4."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"dificil",
-    q:"Un satélite orbita en una elipse cuyo perigeo (punto más cercano) está a 300 km de altura y cuyo apogeo (punto más lejano) está a 3000 km de altura sobre un planeta de radio 6000 km, con el foco en el centro del planeta. ¿Cuál es la longitud del eje mayor (2a) de la órbita?",
-    options:["15300 km", "12600 km", "9300 km", "6300 km"],
-    correct:0,
-    explain:"Distancia al perigeo desde el centro: 6000+300=6300 km. Distancia al apogeo: 6000+3000=9000 km. El eje mayor es la suma de ambas: 2a = 6300+9000 = 15300 km."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"dificil",
-    q:"Para la hipérbola (x − 1)²/9 − (y + 2)²/16 = 1, ¿cuál es la pendiente de sus asíntotas?",
-    options:["±4/3", "±3/4", "±16/9", "±9/16"],
-    correct:0,
-    explain:"Con eje transverso horizontal, las asíntotas tienen pendiente ±b/a. Aquí a²=9 (a=3) y b²=16 (b=4), entonces la pendiente es ±4/3."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"dificil",
-    q:"Si una hipérbola tiene a = 6 y c = 10, ¿cuál es su excentricidad?",
-    options:["5/3", "3/5", "5/6", "6/5"],
-    correct:0,
-    explain:"La excentricidad es e = c/a = 10/6 = 5/3. En toda hipérbola e > 1, lo cual concuerda (5/3 ≈ 1.67)."
-  },
-  {
-    topic:"Secciones Cónicas", dificultad:"dificil",
-    q:"Al completar el cuadrado en 2x² + y² − 8x + 4y + 2 = 0, ¿qué tipo de cónica resulta?",
-    options:["Elipse, con semiejes √10 y √5", "Hipérbola, con semiejes √10 y √5", "Elipse, con semiejes 10 y 5", "Circunferencia de radio √10"],
-    correct:0,
-    explain:"Agrupando: 2(x−2)² + (y+2)² = 10 → (x−2)²/5 + (y+2)²/10 = 1. Ambos términos suman (no restan) y tienen denominadores distintos: es una elipse con semiejes √10 y √5."
-  }
-];
-
-QUESTION_BANK.push(...CONIC_QUESTION_BANK);
 
 /* ================================================================
    MÚSICA AMBIENTAL (sintetizada con Web Audio API, sin archivos
@@ -2939,23 +2716,23 @@ function finishGame(){
   showScreen("screen-final");
 }
 
-/* mini análisis: repasa cada pregunta fallada con la respuesta correcta y el porqué */
+/* repaso completo: lista TODAS las preguntas resueltas (correctas e incorrectas)
+   con tu respuesta, la respuesta correcta y la explicación de cada una */
 function buildReview(){
   const section = document.getElementById("reviewSection");
   const list = document.getElementById("reviewList");
   list.innerHTML = "";
 
-  const fails = state.pitResults.filter(r => !r.ok);
-  if(fails.length === 0){
+  if(state.pitResults.length === 0){
     section.style.display = "none";
     return;
   }
 
-  fails.forEach(r=>{
+  state.pitResults.forEach((r, i)=>{
     const div = document.createElement("div");
-    div.className = "review-item";
+    div.className = "review-item" + (r.ok ? " ok" : "");
     div.innerHTML = `
-      <div class="r-topic">${r.topic}</div>
+      <div class="r-topic"><span>Pit ${i+1} · ${r.topic}</span><span>${r.ok ? "✅ Correcta" : "❌ Incorrecta"}</span></div>
       <div class="r-q">${r.q}</div>
       <div class="r-line">Tu respuesta: <span class="r-your">${formatIntervalOption(r.yourAnswer) || r.yourAnswer}</span></div>
       <div class="r-line">Respuesta correcta: <span class="r-correct">${formatIntervalOption(r.correctAnswer) || r.correctAnswer}</span></div>
@@ -3009,8 +2786,20 @@ document.getElementById("btnDownloadTxt").addEventListener("click", ()=>{
     "Desempeño             : " + pct + "%",
     "------------------------------------------------",
     "NOTA FINAL: " + state.correct.toFixed(1) + " / 10.0",
+    "================================================",
+    "",
+    "REPASO COMPLETO DE PREGUNTAS RESUELTAS",
     "================================================"
   ];
+  state.pitResults.forEach((r,i)=>{
+    lines.push("");
+    lines.push("Pit " + (i+1) + " · " + r.topic + " · " + (r.ok ? "CORRECTA" : "INCORRECTA"));
+    lines.push("Pregunta: " + r.q);
+    lines.push("Tu respuesta     : " + (formatIntervalOption(r.yourAnswer) || r.yourAnswer));
+    lines.push("Respuesta correcta: " + (formatIntervalOption(r.correctAnswer) || r.correctAnswer));
+    if(r.explain) lines.push("Solución: " + r.explain);
+    lines.push("------------------------------------------------");
+  });
   const blob = new Blob([lines.join("\n")], {type:"text/plain;charset=utf-8"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -3071,6 +2860,69 @@ document.getElementById("btnDownloadPdf").addEventListener("click", ()=>{
   doc.setFontSize(9);
   doc.setTextColor(140,140,140);
   doc.text("Generado automáticamente por CalcRacer - Juego educativo de Cálculo Multivariable.", 20, 285);
+
+  /* ---- repaso completo: todas las preguntas resueltas con su solución ---- */
+  if(state.pitResults.length > 0){
+    doc.addPage();
+    let py = 20;
+    const pageBottom = 280;
+    const addFooterAndNewPage = ()=>{
+      doc.setFontSize(9);
+      doc.setTextColor(140,140,140);
+      doc.text("Generado automáticamente por CalcRacer - Juego educativo de Cálculo Multivariable.", 20, 290);
+      doc.addPage();
+      py = 20;
+    };
+    const ensureSpace = (needed)=>{ if(py + needed > pageBottom) addFooterAndNewPage(); };
+
+    doc.setFontSize(16);
+    doc.setTextColor(0,150,160);
+    doc.text("Repaso completo de preguntas resueltas", 20, py);
+    py += 10;
+
+    state.pitResults.forEach((r,i)=>{
+      const yourTxt = formatIntervalOption(r.yourAnswer) || r.yourAnswer;
+      const corrTxt = formatIntervalOption(r.correctAnswer) || r.correctAnswer;
+      const qLines = doc.splitTextToSize(r.q, 170);
+      const yourLines = doc.splitTextToSize("Tu respuesta: " + yourTxt, 170);
+      const corrLines = doc.splitTextToSize("Respuesta correcta: " + corrTxt, 170);
+      const explainLines = r.explain ? doc.splitTextToSize("Solución: " + r.explain, 170) : [];
+      const blockHeight = 7 + qLines.length*5.5 + yourLines.length*5.5 + corrLines.length*5.5 + explainLines.length*5 + 8;
+
+      ensureSpace(blockHeight);
+
+      doc.setFontSize(10.5);
+      doc.setFont(undefined,"bold");
+      doc.setTextColor(r.ok ? 0 : 200, r.ok ? 130 : 0, r.ok ? 60 : 90);
+      doc.text("Pit " + (i+1) + " · " + r.topic + " · " + (r.ok ? "CORRECTA" : "INCORRECTA"), 20, py);
+      py += 6;
+
+      doc.setFont(undefined,"normal");
+      doc.setFontSize(10);
+      doc.setTextColor(20,20,20);
+      qLines.forEach(line=>{ ensureSpace(6); doc.text(line, 20, py); py += 5.5; });
+
+      doc.setTextColor(150,0,90);
+      yourLines.forEach(line=>{ ensureSpace(6); doc.text(line, 20, py); py += 5.5; });
+
+      doc.setTextColor(0,120,40);
+      corrLines.forEach(line=>{ ensureSpace(6); doc.text(line, 20, py); py += 5.5; });
+
+      if(explainLines.length){
+        doc.setFontSize(9);
+        doc.setTextColor(90,90,100);
+        explainLines.forEach(line=>{ ensureSpace(5); doc.text(line, 20, py); py += 5; });
+      }
+      py += 6;
+      doc.setDrawColor(220,220,225);
+      doc.setLineWidth(0.3);
+      doc.line(20, py-3, 190, py-3);
+    });
+
+    doc.setFontSize(9);
+    doc.setTextColor(140,140,140);
+    doc.text("Generado automáticamente por CalcRacer - Juego educativo de Cálculo Multivariable.", 20, 290);
+  }
 
   doc.save("Reporte_CalcRacer_" + safeFileName(state.studentName) + ".pdf");
 });
