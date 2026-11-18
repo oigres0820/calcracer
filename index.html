@@ -163,7 +163,6 @@
   }
   .diff-btn:hover{border-color:var(--neon-cyan);}
   .diff-btn.active{border-color:var(--neon-yellow);background:rgba(255,212,0,0.10);box-shadow:0 0 12px rgba(255,212,0,0.3);}
-  .diff-btn[data-diff="facil"].active{border-color:var(--neon-green);background:rgba(57,255,106,0.10);box-shadow:0 0 12px rgba(57,255,106,0.3);}
   .diff-btn[data-diff="dificil"].active{border-color:var(--neon-magenta);background:rgba(255,0,128,0.10);box-shadow:0 0 12px rgba(255,0,128,0.3);}
 
   #temasOverlay{
@@ -230,6 +229,7 @@
   .hud-item.ok .hud-val{color:var(--neon-green);}
   .hud-item.bad .hud-val{color:var(--neon-magenta);}
   .hud-item.time .hud-val{color:var(--neon-cyan);}
+  .hud-item.streak .hud-val{color:var(--neon-orange);text-shadow:0 0 8px rgba(255,138,31,0.7);}
   .hud-mute{
     width:32px;height:32px;border-radius:50%;flex-shrink:0;
     background:#10111c;border:1px solid var(--border);color:var(--neon-cyan);
@@ -334,7 +334,7 @@
     background:var(--neon-yellow);color:#1a1200;padding:6px 12px;border-radius:6px;
     letter-spacing:1px;
   }
-  .modal-head .topic-tag{font-size:12px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;}
+  .modal-head .topic-tag{font-size:12px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;border:1px solid var(--border);border-radius:20px;padding:4px 12px;}
   .modal-body{padding:22px 26px 26px;}
   .question-text{font-size:19px;font-weight:600;line-height:1.4;margin:0 0 20px;}
   .options{display:flex;flex-direction:column;gap:10px;}
@@ -489,7 +489,6 @@
       <div class="field">
         <label>Dificultad de las preguntas</label>
         <div class="difficulty-group" id="difficultyGroup">
-          <button type="button" class="diff-btn" data-diff="facil">🟢 Fácil</button>
           <button type="button" class="diff-btn active" data-diff="intermedio">🟡 Intermedio</button>
           <button type="button" class="diff-btn" data-diff="dificil">🔴 Difícil</button>
         </div>
@@ -497,9 +496,11 @@
 
       <div class="rules-box">
         <b>Cómo se juega:</b> mueve el auto con <b>← →</b> o <b>A / D</b> entre los 3 carriles, esquiva conos
-        y manchas de aceite. Cada colisión reduce tu velocidad. A lo largo de la pista encontrarás
+        y manchas de aceite (en el teclado también puedes pulsar <b>1-4</b> para responder más rápido).
+        Cada colisión reduce tu velocidad. A lo largo de la pista encontrarás
         <b>10 Pits</b>: al entrar se detiene la carrera y debes responder una pregunta de Cálculo
-        Multivariable (límites y continuidad, diferenciales, regla de la cadena y razones relacionadas).
+        Multivariable (derivadas direccionales, multiplicadores de Lagrange, máximos y mínimos,
+        integrales dobles y volúmenes mediante el jacobiano).
         Cada respuesta correcta suma <b>1.0 punto</b> sobre una nota final de <b>10.0</b>.
       </div>
 
@@ -524,6 +525,7 @@
       <div class="hud-item pits"><span class="hud-icon">🏁</span><span class="hud-val" id="hudPitFrac">0/10</span></div>
       <div class="hud-item ok"><span class="hud-icon">✅</span><span class="hud-val" id="hudCorrect">0</span></div>
       <div class="hud-item bad"><span class="hud-icon">❌</span><span class="hud-val" id="hudWrong">0</span></div>
+      <div class="hud-item streak" id="hudStreakWrap" style="display:none;"><span class="hud-icon">🔥</span><span class="hud-val" id="hudStreak">0</span></div>
       <div class="hud-item time"><span class="hud-icon">⏱️</span><span class="hud-val" id="hudTime">0</span><span class="hud-unit">s</span></div>
       <div class="hud-volume">
         <button id="btnMute" class="hud-mute" title="Silenciar / activar sonido del motor">🔊</button>
@@ -571,6 +573,7 @@
         <div class="panel stat-box"><div class="v" id="statWrong" style="color:var(--neon-magenta);">0</div><div class="l">Incorrectas</div></div>
         <div class="panel stat-box"><div class="v" id="statCollisions">0</div><div class="l">Colisiones</div></div>
         <div class="panel stat-box"><div class="v" id="statPercent">0%</div><div class="l">Desempeño</div></div>
+        <div class="panel stat-box"><div class="v" id="statBestStreak" style="color:var(--neon-orange);">0</div><div class="l">🔥 Mejor racha</div></div>
       </div>
 
       <div class="review-section" id="reviewSection" style="display:none;">
@@ -600,19 +603,29 @@
     <div class="modal-body">
       <div class="topics-grid">
         <div class="topic-card" style="--accent:var(--neon-cyan);">
-          <div class="topic-icon">∄</div>
-          <h4>Límites y Continuidad</h4>
-          <p>Evaluar límites de funciones de varias variables por distintas trayectorias (rectas, parábolas, polares) para probar si existen o no, y analizar la continuidad en un punto o en todo el plano.</p>
+          <div class="topic-icon">∇</div>
+          <h4>Derivadas Direccionales</h4>
+          <p>Razón de cambio de una función en una dirección dada, usando el gradiente ∇f y un vector unitario. Dirección e intensidad de máximo crecimiento o decrecimiento.</p>
         </div>
         <div class="topic-card" style="--accent:var(--neon-green);">
-          <div class="topic-icon">dz</div>
-          <h4>Diferenciales</h4>
-          <p>La diferencial total dz = fx dx + fy dy, la linealización L(x,y) de una función, y su uso para aproximar cambios y estimar errores máximos en mediciones.</p>
+          <div class="topic-icon">λ</div>
+          <h4>Multiplicadores de Lagrange</h4>
+          <p>Optimización de una función sujeta a una restricción (∇f = λ∇g), aplicada a problemas de máxima utilidad, mínimo costo o mínima distancia.</p>
         </div>
         <div class="topic-card" style="--accent:var(--neon-magenta);">
-          <div class="topic-icon">∂</div>
-          <h4>Regla de la Cadena</h4>
-          <p>Derivar funciones compuestas de varias variables (dz/dt, ∂z/∂r, ∂z/∂s), diferenciación implícita, y problemas de razones relacionadas donde varias cantidades cambian a la vez.</p>
+          <div class="topic-icon">∂²</div>
+          <h4>Máximos y Mínimos</h4>
+          <p>Puntos críticos de f(x,y), prueba de la segunda derivada (Hessiano) para clasificarlos como mínimo, máximo o punto silla, y extremos absolutos en regiones cerradas.</p>
+        </div>
+        <div class="topic-card" style="--accent:var(--neon-yellow);">
+          <div class="topic-icon">∬</div>
+          <h4>Integrales Dobles</h4>
+          <p>Cálculo de áreas, masas y volúmenes mediante ∬ f(x,y) dA sobre regiones rectangulares, triangulares o circulares, incluyendo coordenadas polares.</p>
+        </div>
+        <div class="topic-card" style="--accent:var(--neon-orange);">
+          <div class="topic-icon">J</div>
+          <h4>Volúmenes mediante el Jacobiano</h4>
+          <p>Cambio de variables en integrales múltiples (jacobiano ∂(x,y)/∂(u,v)), y su uso para calcular volúmenes con coordenadas cilíndricas, esféricas o transformaciones lineales.</p>
         </div>
       </div>
     </div>
@@ -648,548 +661,516 @@
 "use strict";
 
 /* ================================================================
-   BANCO DE PREGUNTAS
-   Unidad: Límites y Continuidad, Diferenciales y Aproximación Lineal,
-   Regla de la Cadena y Razones Relacionadas.
+   BANCO DE PREGUNTAS (tercer corte)
+   Unidad: Derivadas Direccionales, Multiplicadores de Lagrange,
+   Máximos y Mínimos, Integrales Dobles, Volúmenes mediante el Jacobiano.
+   Solo niveles Intermedio y Difícil.
    ================================================================ */
 const QUESTION_BANK = [
   /* ================================================================
-     TEMA 1: LÍMITES Y CONTINUIDAD
+     TEMA 1: DERIVADAS DIRECCIONALES
      ================================================================ */
-  // ---- Fácil ----
-  {
-    topic:"Límites y Continuidad",
-    q:"Para que lim(x,y)→(a,b) f(x,y) exista, el valor del límite debe ser el mismo:",
-    options:["Solo a lo largo del eje x", "A lo largo de toda trayectoria posible que se acerque a (a,b)", "Solo a lo largo de rectas y = mx", "Solo si f es polinomial"],
-    correct:1,
-    dificultad:"facil",
-    explain:"A diferencia de una variable (donde solo hay 2 direcciones de acercamiento), en dos variables hay infinitas trayectorias posibles. El límite existe únicamente si da el mismo valor por todas ellas."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"Si a lo largo de y=0 el límite de f(x,y) en (0,0) da 0, y a lo largo de y=x da 1, ¿qué se puede concluir sobre lim(x,y)→(0,0) f(x,y)?",
-    options:["El límite es 0", "El límite es 1", "El límite NO existe, porque distintas trayectorias dan valores distintos", "El límite es el promedio, 0.5"],
-    correct:2,
-    dificultad:"facil",
-    explain:"Si dos trayectorias distintas producen valores distintos, el límite no puede existir: para existir, tendría que ser el mismo número sin importar la trayectoria elegida."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"Toda función polinomial en x,y (como f(x,y) = 3x²y − 2xy + 7) es continua en:",
-    options:["Solo el origen", "Ningún punto", "Todo ℝ²", "Solo donde x = y"],
-    correct:2,
-    dificultad:"facil",
-    explain:"Las funciones polinomiales son combinaciones de sumas y productos de funciones continuas, así que son continuas en todo el plano ℝ²."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"La función f(x,y) = 1/(x²+y²) es discontinua en:",
-    options:["Todo ℝ²", "Solo el origen (0,0), donde el denominador se anula", "Solo el eje x", "En ningún punto"],
-    correct:1,
-    dificultad:"facil",
-    explain:"El denominador x²+y² se anula únicamente en (0,0); ahí la función no está definida y por tanto es discontinua, mientras que en el resto del plano es un cociente de polinomios continuo."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"Evaluar un límite de dos variables solo a lo largo de rectas y = mx (que pasan por el origen):",
-    options:["Siempre es suficiente para probar que el límite existe", "Solo sirve para sospechar que NO existe si el resultado depende de m; no basta para probar que sí existe", "Nunca es útil", "Prueba automáticamente la continuidad de f"],
-    correct:1,
-    dificultad:"facil",
-    explain:"Si el resultado cambia según la pendiente m, el límite no existe. Pero si da igual para toda recta, eso no basta para garantizar que existe: hay infinitas trayectorias curvas que también deben coincidir."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"lim(x,y)→(2,3) (x²+y²) es igual a:",
-    options:["5", "13", "6", "25"],
-    correct:1,
-    dificultad:"facil",
-    explain:"Como x²+y² es polinomial (y por tanto continua en todo punto), el límite se calcula simplemente evaluando: 2²+3² = 4+9 = 13."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"Si f(x,y) es continua en el punto (a,b), entonces necesariamente:",
-    options:["lim(x,y)→(a,b) f(x,y) = f(a,b)", "f(a,b) no está definida", "El límite en ese punto no existe", "f es discontinua en todos los demás puntos"],
-    correct:0,
-    dificultad:"facil",
-    explain:"La definición de continuidad en un punto exige exactamente que el límite ahí coincida con el valor de la función en ese punto."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"¿Cuál de las siguientes NO es una forma válida de probar que un límite doble SÍ existe?",
-    options:["Usar el teorema del sandwich (acotamiento)", "Convertir a coordenadas polares y mostrar que el límite no depende de θ", "Evaluar el límite solo a lo largo de una única recta y = mx", "Mostrar que f es continua ahí por ser suma/producto/cociente de funciones continuas"],
-    correct:2,
-    dificultad:"facil",
-    explain:"Evaluar una sola trayectoria nunca prueba que el límite existe: solo puede usarse para demostrar que NO existe, si se contradice con el resultado de otra trayectoria."
-  },
   // ---- Intermedio ----
   {
-    topic:"Límites y Continuidad",
-    q:"Para f(x,y) = (x²−y²)/(x²+y²), evaluando a lo largo de y=0 se obtiene 1, y a lo largo de x=0 se obtiene −1. Por lo tanto lim(x,y)→(0,0) f(x,y):",
-    options:["Es 1", "Es −1", "No existe", "Es 0"],
-    correct:2,
+    topic:"Derivadas Direccionales",
+    q:"Un ingeniero modela la temperatura en una placa metálica con T(x,y)=100-x²-2y² (°C). En el punto (2,1), ¿cuál es la razón de cambio de la temperatura en la dirección del vector v=(3,4)?",
+    options:["-5.7 °C/unidad", "-5.6 °C/unidad", "-28 °C/unidad", "5.6 °C/unidad"],
+    correct:1,
     dificultad:"intermedio",
-    explain:"Ambas trayectorias producen resultados distintos (1 y −1), así que el límite no puede existir: no hay un único valor al que se acerque f sin importar la dirección."
+    explain:"∇T=(-2x,-4y); en (2,1): ∇T=(-4,-4). El vector unitario en la dirección de v=(3,4) es (3/5,4/5). D_v T = (-4)(3/5)+(-4)(4/5) = -12/5-16/5 = -28/5 = -5.6 °C por unidad de longitud."
   },
   {
-    topic:"Límites y Continuidad",
-    q:"Para f(x,y) = xy²/(x²+y⁴), por cualquier recta y = mx el límite en (0,0) da 0. Pero evaluando por la trayectoria parabólica x = y² se obtiene 1/2. ¿Qué se concluye?",
-    options:["El límite no existe, aunque todas las rectas dieran 0", "El límite es 0, porque las rectas son suficientes", "El límite es 1/2, porque la parábola 'gana'", "El límite es el promedio entre 0 y 1/2"],
+    topic:"Derivadas Direccionales",
+    q:"La altitud del terreno en una montaña se modela con h(x,y)=500-(1/50)x²-(3/100)y² (metros). Un excursionista está en el punto (10,10) y camina en una dirección que forma 45° con el eje x. ¿Cuál es la razón de cambio de la altitud en esa dirección?",
+    options:["0.71 m/m", "-1.0 m/m", "-0.5 m/m", "-0.71 m/m"],
+    correct:3,
+    dificultad:"intermedio",
+    explain:"∇h=(-x/25,-3y/50); en (10,10): ∇h=(-0.4,-0.6). El vector unitario a 45° es (√2/2,√2/2). D_u h = -0.4(√2/2)-0.6(√2/2) = -√2/2 ≈ -0.71 m por metro recorrido (la altitud disminuye)."
+  },
+  {
+    topic:"Derivadas Direccionales",
+    q:"La concentración de un contaminante en un lago se modela con C(x,y)=50e^{-(x²+y²)/100} (ppm), con el origen en la fuente del vertido. Un sensor ubicado en (3,4) se mueve directamente hacia la fuente (el origen). ¿Cuál es la razón de cambio de la concentración detectada?",
+    options:["≈3.89 ppm/unidad", "≈7.79 ppm/unidad", "≈-3.89 ppm/unidad", "≈1.95 ppm/unidad"],
     correct:0,
     dificultad:"intermedio",
-    explain:"Aunque todas las rectas dan 0, la parábola x=y² da 1/2, un valor distinto. Esto confirma que probar solo con rectas no es suficiente: hay que probar también con otras curvas."
+    explain:"∇C = C(x,y)·(-x/50,-y/50); en (3,4), C(3,4)≈38.94, por lo que ∇C≈(-2.336,-3.115). El vector unitario hacia el origen es (-3/5,-4/5). D_u C = (-2.336)(-3/5)+(-3.115)(-4/5) ≈ 3.89 ppm por unidad (la concentración aumenta al acercarse a la fuente)."
   },
   {
-    topic:"Límites y Continuidad",
-    q:"Usando coordenadas polares (x=r cosθ, y=r senθ) se puede acotar |x²y/(x²+y²)| = r|cos²θ senθ| ≤ r. Como esta cota no depende de θ y r→0, el límite lim(x,y)→(0,0) x²y/(x²+y²) es:",
-    options:["No existe", "Es 0", "Es 1", "Depende de θ"],
+    topic:"Derivadas Direccionales",
+    q:"La presión atmosférica en una región se modela con P(x,y)=1000-5x-3y² (hPa). En el punto (4,2), un dron se desplaza en la dirección del vector unitario (0.6, 0.8). ¿Cuál es la razón de cambio de la presión en esa dirección?",
+    options:["12.6 hPa/unidad", "-12.6 hPa/unidad", "-17.0 hPa/unidad", "-8.6 hPa/unidad"],
     correct:1,
     dificultad:"intermedio",
-    explain:"Al acotar la expresión por r (independiente de θ) y como r→0, el teorema del sandwich garantiza que el límite es 0, sin importar la dirección de acercamiento."
+    explain:"∇P=(-5,-6y); en (4,2): ∇P=(-5,-12). D_u P=(-5)(0.6)+(-12)(0.8)=-3-9.6=-12.6 hPa por unidad de longitud."
   },
   {
-    topic:"Límites y Continuidad",
-    q:"Usando coordenadas polares, f(x,y) = xy/√(x²+y²) se reescribe como f = r cosθ senθ, que tiende a 0 cuando r→0 sin importar θ. Entonces lim(x,y)→(0,0) f(x,y):",
-    options:["No existe", "Es 0", "Es 1", "No se puede determinar con polares"],
+    topic:"Derivadas Direccionales",
+    q:"Para la función f(x,y)=x²y-y³, evaluada en el punto (2,-1), ¿cuál es la máxima razón de cambio posible (en cualquier dirección)?",
+    options:["≈2.24, en la dirección de ∇f", "≈4.12, en la dirección de ∇f=(-4,1)", "17, en la dirección de ∇f", "≈4.12, en la dirección de -∇f=(4,-1)"],
     correct:1,
     dificultad:"intermedio",
-    explain:"Como la expresión en polares queda acotada por r (que tiende a 0) multiplicado por una función acotada de θ, el límite es 0."
+    explain:"∇f=(2xy, x²-3y²); en (2,-1): ∇f=(-4,1). La máxima razón de cambio es |∇f|=√(16+1)=√17≈4.12, y se alcanza en la dirección del propio gradiente, (-4,1)."
   },
   {
-    topic:"Límites y Continuidad",
-    q:"Para f(x,y) = x²y/(x⁴+y²), evaluando por cualquier recta y=mx se obtiene 0, pero por la trayectoria y=x² se obtiene 1/2. Por lo tanto el límite en (0,0):",
-    options:["Es 0, porque toda recta da 0", "No existe, porque la curva y=x² da un valor distinto", "Es 1/2", "Es infinito"],
+    topic:"Derivadas Direccionales",
+    q:"Dada g(x,y)=ln(x²+y²), que modela la intensidad percibida de una fuente sonora puntual, evaluada en el punto (1,2), ¿cuál es la derivada direccional en la dirección del vector (2,-1)?",
+    options:["0.4", "0 (la dirección es tangente a la curva de nivel)", "-0.89", "0.89"],
     correct:1,
     dificultad:"intermedio",
-    explain:"Esta es la contraparte del ejemplo anterior con los roles de x,y intercambiados: la curva y=x² (que no es una recta) produce 1/2, distinto del 0 obtenido por rectas, así que el límite no existe."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"La función f(x,y) = sen(x−y)/(x−y) para x≠y, con f(x,x)=1, es continua en:",
-    options:["Todo ℝ² (la definición en x=y 'rellena' correctamente el hueco)", "Solo donde x≠y", "En ningún punto", "Solo en el origen"],
-    correct:0,
-    dificultad:"intermedio",
-    explain:"Como lim u→0 sen(u)/u = 1 (límite clásico de una variable, con u=x−y), definir f(x,x)=1 elimina exactamente la discontinuidad removible en la recta x=y, haciendo f continua en todo el plano."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"¿Cuál es el mayor conjunto en el que f(x,y) = ln(4 − x² − y²) es continua?",
-    options:["Todo ℝ²", "El interior del círculo x²+y² < 4", "El exterior del círculo x²+y² > 4", "Solo el origen"],
-    correct:1,
-    dificultad:"intermedio",
-    explain:"El logaritmo exige que su argumento sea positivo: 4 − x² − y² > 0, es decir x²+y² < 4, el interior (abierto, sin borde) del disco de radio 2."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"Para que f(x,y) = sen⁻¹(x/y) esté definida y sea continua en un punto, se requiere que:",
-    options:["y ≠ 0 y además −1 ≤ x/y ≤ 1", "x = 0", "y > 0 únicamente", "x ≠ y"],
-    correct:0,
-    dificultad:"intermedio",
-    explain:"arcsin solo está definido cuando su argumento está en [−1,1], y además y no puede ser 0 porque aparece en el denominador de x/y."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"Dada f(x,y) = √(1−x²−4y²) si x²+4y²≤1, y f(x,y)=c si x²+4y²>1, ¿qué valor de c hace que f sea continua en todo el plano?",
-    options:["c = 0", "c = 1", "No existe un valor de c que funcione", "c = 4"],
-    correct:0,
-    dificultad:"intermedio",
-    explain:"En la frontera x²+4y²=1, la primera pieza vale √(1−1)=0. Para que no haya salto entre las dos piezas, c debe igualar ese valor en la frontera, es decir c=0."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"Dada f(x,y) = 1 si x²+y² ≤ 1, y f(x,y) = 0 si x²+y² > 1, el límite lim(x,y)→(0,0) f(x,y) es:",
-    options:["0", "1", "No existe", "1/2"],
-    correct:1,
-    dificultad:"intermedio",
-    explain:"El punto (0,0) está en el interior del círculo de radio 1, así que para todo punto suficientemente cercano a él f vale constantemente 1; el límite (y de hecho f misma) vale 1 ahí."
-  },
-  {
-    topic:"Límites y Continuidad",
-    q:"Si g y h son funciones continuas de x y y, y f(x,y) = g(x,y) / h(x,y), entonces f es continua:",
-    options:["En todo ℝ² sin excepción", "En todos los puntos donde h(x,y) ≠ 0", "Solo donde g(x,y) = 0", "Nunca, un cociente nunca es continuo"],
-    correct:1,
-    dificultad:"intermedio",
-    explain:"El cociente de dos funciones continuas es continuo en todos los puntos donde el denominador no se anula; donde h=0 el cociente ni siquiera está definido."
+    explain:"∇g=(2x/(x²+y²), 2y/(x²+y²)); en (1,2): ∇g=(0.4,0.8). El vector unitario en la dirección (2,-1) es (2,-1)/√5. D_u g = 0.4(2/√5)+0.8(-1/√5) = 0: el vector (2,-1) es perpendicular al gradiente, es decir, tangente a la curva de nivel que pasa por (1,2)."
   },
   // ---- Difícil ----
   {
-    topic:"Límites y Continuidad",
-    q:"Para f(x,y) = x³y/(x⁶+y²), por cualquier recta y=mx el límite en (0,0) da 0. Pero por la curva y=x³ se obtiene 1/2. ¿Qué concluye sobre el límite?",
-    options:["Existe y vale 0", "Existe y vale 1/2", "No existe, porque la curva y=x³ contradice el resultado de las rectas", "No existe, porque en polares depende de θ"],
+    topic:"Derivadas Direccionales",
+    q:"La intensidad de una señal de wifi se modela con S(x,y)=80-0.5(x-5)²-0.8(y-3)² (dBm). Un dispositivo está en el punto (7,6). ¿En qué dirección unitaria debe moverse el dispositivo para que la señal aumente lo más rápido posible?",
+    options:["(0.38, 0.92)", "(-0.5, -0.8)", "(-0.38, -0.92)", "(-0.92, -0.38)"],
     correct:2,
     dificultad:"dificil",
-    explain:"Por cualquier recta y=mx el límite da 0, pero por la curva y=x³ (que 'empareja' el grado 6 del denominador) da 1/2; como los valores no coinciden, el límite no existe, aunque 'pase' la prueba de las rectas."
+    explain:"∇S=(-(x-5), -1.6(y-3)); en (7,6): ∇S=(-2,-4.8), con magnitud |∇S|=√(4+23.04)=√27.04=5.2. El vector unitario en la dirección de máximo crecimiento es ∇S/|∇S|=(-2/5.2,-4.8/5.2)≈(-0.38,-0.92)."
   },
   {
-    topic:"Límites y Continuidad",
-    q:"Usando polares, (x²−y²)/√(x²+y²) se puede escribir como r(cos²θ−sen²θ), que queda acotada en valor absoluto por r (ya que |cos²θ−sen²θ| ≤ 1). Por lo tanto lim(x,y)→(0,0) (x²−y²)/√(x²+y²):",
-    options:["No existe", "Existe y vale 0", "Existe y vale 1", "Depende de θ, por lo que no se puede concluir"],
+    topic:"Derivadas Direccionales",
+    q:"Para la superficie z=x²+y² (un paraboloide que modela, por ejemplo, un reflector parabólico), en el punto (3,4), ¿en qué dirección unitaria la derivada direccional es igual a cero?",
+    options:["(-0.6, -0.8)", "(-0.8, 0.6)", "(0.6, 0.8)", "(0.8, 0.6)"],
     correct:1,
     dificultad:"dificil",
-    explain:"Como la expresión queda acotada por r (sin depender de θ) y r→0, el teorema del sandwich garantiza que el límite es 0, sin importar la dirección de acercamiento."
+    explain:"La derivada direccional es cero en cualquier dirección perpendicular al gradiente (tangente a la curva de nivel). ∇z=(2x,2y); en (3,4): ∇z=(6,8). Un vector perpendicular es (-8,6), que normalizado da (-0.8,0.6); su producto punto con (6,8) es 6(-0.8)+8(0.6)=0."
   },
   {
-    topic:"Límites y Continuidad",
-    q:"Para f(x,y,z) = xyz/(x²+y²+z²) con (x,y,z)→(0,0,0), usando coordenadas esféricas se puede acotar |f| ≤ Cρ para alguna constante C. Por lo tanto el límite:",
-    options:["No existe", "Existe y es 0", "Existe y es 1", "No se puede evaluar con coordenadas esféricas"],
+    topic:"Derivadas Direccionales",
+    q:"La función f(x,y,z)=xyz+x² describe la densidad de un material en el punto (1,2,1). ¿Cuál es la derivada direccional de f en ese punto, en la dirección del vector (1,1,1)?",
+    options:["7", "≈4.04", "≈2.02", "≈2.33"],
     correct:1,
     dificultad:"dificil",
-    explain:"Al acotar la expresión por una constante multiplicada por ρ (que tiende a 0 sin importar la dirección), el teorema del sandwich garantiza que el límite triple es 0."
+    explain:"∇f=(yz+2x, xz, xy); en (1,2,1): ∇f=(4,1,2). El vector unitario en la dirección (1,1,1) es (1,1,1)/√3. D_u f = (4+1+2)/√3 = 7/√3 ≈ 4.04."
   },
   {
-    topic:"Límites y Continuidad",
-    q:"Sea f(x,y) = x²y²/(x²y²+(x−y)²) para (x,y)≠(0,0). Evaluando a lo largo de y=x (x≠0) se obtiene 1, y a lo largo de y=0 se obtiene 0. ¿Qué se concluye?",
-    options:["El límite es 1", "El límite es 0", "El límite no existe, porque dos trayectorias dan valores distintos", "El límite es 1/2"],
+    topic:"Derivadas Direccionales",
+    q:"La temperatura dentro de un horno industrial se modela con T(x,y,z)=200-x²-y²-z² (°C), con el origen en el centro del horno. Un sensor ubicado en (1,1,1) se mueve en línea recta hacia el punto (3,3,3). ¿Cuál es la razón de cambio de la temperatura detectada por el sensor en ese instante?",
+    options:["≈-1.15 °C/unidad", "≈-3.46 °C/unidad", "-6 °C/unidad", "≈3.46 °C/unidad"],
+    correct:1,
+    dificultad:"dificil",
+    explain:"∇T=(-2x,-2y,-2z); en (1,1,1): ∇T=(-2,-2,-2). El vector unitario hacia (3,3,3) es (1,1,1)/√3. D_u T = -6/√3 = -2√3 ≈ -3.46 °C por unidad (la temperatura disminuye al alejarse del centro)."
+  },
+  {
+    topic:"Derivadas Direccionales",
+    q:"Una empresa modela su costo de producción con C(x,y)=3x²+2y²-xy (miles de dólares), donde x,y son unidades de dos insumos. En el punto de operación actual (3,2), la gerencia quiere reducir el costo lo más rápido posible. ¿Cuál es la razón de disminución máxima posible del costo en ese punto?",
+    options:["≈-13.0 (mil USD)/unidad", "-21 (mil USD)/unidad", "≈16.76 (mil USD)/unidad", "≈-16.76 (mil USD)/unidad"],
+    correct:3,
+    dificultad:"dificil",
+    explain:"∇C=(6x-y,4y-x); en (3,2): ∇C=(16,5). La razón de disminución más rápida posible es -|∇C| (dirección -∇C/|∇C|): -√(256+25)=-√281≈-16.76 miles de USD por unidad."
+  },
+  {
+    topic:"Derivadas Direccionales",
+    q:"La función f(x,y)=e^x cos(y) modela la amplitud de una onda. En el punto (0, π/3), ¿cuál es la derivada direccional en la dirección del eje x positivo (ángulo 0°)?",
+    options:["0", "1", "0.5", "-0.866"],
     correct:2,
     dificultad:"dificil",
-    explain:"Sobre y=x, el término (x−y)² se anula y la expresión vale 1; sobre y=0, el numerador se anula y la expresión vale 0. Dos trayectorias distintas dan valores distintos, así que el límite no existe."
+    explain:"∇f=(e^x cos y, -e^x sen y); en (0,π/3): ∇f=(cos(π/3), -sen(π/3))=(0.5,-√3/2). En la dirección (1,0), la derivada direccional es la primera componente del gradiente: D_u f = 0.5."
   },
-  {
-    topic:"Límites y Continuidad",
-    q:"Para f(x,y) = x²y²/(x²+y²)², evaluando por y=mx se obtiene f = m²/(1+m²)², una expresión que cambia según el valor de m (por ejemplo, 0 si m=0, pero 1/4 si m=1). Por lo tanto el límite en (0,0):",
-    options:["Existe y vale 0", "No existe, porque el resultado depende de la pendiente m de la recta elegida", "Existe y vale 1", "Es infinito"],
-    correct:1,
-    dificultad:"dificil",
-    explain:"Como m²/(1+m²)² no es constante (varía según la recta elegida), distintas trayectorias rectas ya producen valores distintos, por lo que el límite no existe."
-  },
-  // ================================================================
-  // TEMA 2: DIFERENCIALES Y APROXIMACIÓN LINEAL
-  // ================================================================
-  // ---- Fácil ----
-  {
-    topic:"Diferenciales",
-    q:"La diferencial total de z = f(x,y) se define como:",
-    options:["dz = fx dx + fy dy", "dz = fx + fy", "dz = f(x+dx, y+dy)", "dz = fxx dx + fyy dy"],
-    correct:0,
-    dificultad:"facil",
-    explain:"La diferencial total combina linealmente las derivadas parciales con los incrementos infinitesimales de cada variable: dz = (∂f/∂x)dx + (∂f/∂y)dy."
-  },
-  {
-    topic:"Diferenciales",
-    q:"Si z = x²y³, entonces la diferencial dz es:",
-    options:["2xy³ dx + 3x²y² dy", "2x dx + 3y² dy", "x²y³(dx+dy)", "2xy³ + 3x²y²"],
-    correct:0,
-    dificultad:"facil",
-    explain:"Derivando parcialmente: ∂z/∂x = 2xy³, ∂z/∂y = 3x²y². Por lo tanto dz = 2xy³ dx + 3x²y² dy."
-  },
-  {
-    topic:"Diferenciales",
-    q:"La linealización L(x,y) de f en el punto (a,b) se usa para:",
-    options:["Calcular el valor exacto de f lejos de (a,b)", "Aproximar f(x,y) cerca de (a,b) mediante el plano tangente", "Encontrar los puntos críticos de f", "Calcular integrales dobles"],
-    correct:1,
-    dificultad:"facil",
-    explain:"L(x,y) = f(a,b) + fx(a,b)(x−a) + fy(a,b)(y−b) es la ecuación del plano tangente, usada como aproximación lineal de f cerca del punto (a,b)."
-  },
-  {
-    topic:"Diferenciales",
-    q:"Si f(x,y) = x+y, la linealización L(x,y) en cualquier punto (a,b) resulta ser:",
-    options:["L(x,y) = x+y (coincide exactamente con f, porque f ya es lineal)", "L(x,y) = a+b", "L(x,y) = x−y", "L(x,y) = 1"],
-    correct:0,
-    dificultad:"facil",
-    explain:"Cuando f ya es una función lineal (un plano), su propia linealización en cualquier punto es ella misma: el 'plano tangente' a un plano es el mismo plano."
-  },
-  {
-    topic:"Diferenciales",
-    q:"Para que f sea diferenciable en un punto, la definición formal exige que, además de existir fx y fy:",
-    options:["f debe ser discontinua ahí", "f(x,y) − L(x,y) debe tender a 0 más rápido que la distancia al punto, es decir, los términos de error deben desvanecerse", "f debe ser polinomial", "Solo basta con que exista fx"],
-    correct:1,
-    dificultad:"facil",
-    explain:"La diferenciabilidad es más fuerte que solo la existencia de derivadas parciales: exige que el plano tangente aproxime bien a f cerca del punto, con términos de error que se vuelven despreciables."
-  },
-  {
-    topic:"Diferenciales",
-    q:"Si w = f(x,y,z) = xyz, la diferencial total dw es:",
-    options:["yz dx + xz dy + xy dz", "x dx + y dy + z dz", "dx + dy + dz", "xyz(dx+dy+dz)"],
-    correct:0,
-    dificultad:"facil",
-    explain:"Derivando parcialmente respecto a cada variable: ∂w/∂x=yz, ∂w/∂y=xz, ∂w/∂z=xy, así que dw = yz dx + xz dy + xy dz."
-  },
-  {
-    topic:"Diferenciales",
-    q:"Usar diferenciales para aproximar el cambio Δz de una función cuando (x,y) cambia ligeramente es útil porque:",
-    options:["Da siempre el valor exacto", "Da una buena aproximación lineal de primer orden, sin tener que evaluar f en el punto exacto", "Solo funciona para funciones lineales", "Reemplaza por completo el cálculo de límites"],
-    correct:1,
-    dificultad:"facil",
-    explain:"dz es una aproximación lineal de primer orden al cambio real Δz, útil cuando los incrementos dx, dy son pequeños y medir f exactamente es costoso o poco práctico."
-  },
+  /* ================================================================
+     TEMA 2: MULTIPLICADORES DE LAGRANGE
+     ================================================================ */
   // ---- Intermedio ----
   {
-    topic:"Diferenciales",
-    q:"El área de una superficie rectangular está dada por S = 2(xy+yz+xz). Con x=60, y=80, z=50 y posibles errores de medición Δx=Δy=Δz=0.2, el error máximo aproximado en S usando diferenciales es:",
-    options:["152 cm²", "76 cm²", "38 cm²", "304 cm²"],
+    topic:"Multiplicadores de Lagrange",
+    q:"Un fabricante quiere que la suma de dos cantidades producidas x e y sea igual a 10 toneladas (x+y=10) y desea maximizar el producto xy (relacionado con su ingreso). Usando multiplicadores de Lagrange, ¿cuáles son los valores que maximizan xy, y cuál es ese valor máximo?",
+    options:["x=5, y=5, máximo=25", "x=5, y=5, máximo=50", "x=2, y=8, máximo=16", "x=10, y=0, máximo=0"],
     correct:0,
     dificultad:"intermedio",
-    explain:"dS = 2(y+z)dx + 2(x+z)dy + 2(x+y)dz = 2(130)(0.2) + 2(110)(0.2) + 2(140)(0.2) = 52+44+56 = 152 cm²."
+    explain:"Lagrange: ∇(xy)=λ∇(x+y) → (y,x)=λ(1,1) → x=y. Con x+y=10: x=y=5. El valor máximo es xy=25."
   },
   {
-    topic:"Diferenciales",
-    q:"El área de un triángulo rectángulo es A=(1/2)xy. Si x cambia de 3 a 3.05 pulg (dx=0.05) y y cambia de 4 a 3.97 pulg (dy=−0.03), el cambio aproximado en el área usando diferenciales es:",
-    options:["0.055 pulg²", "0.11 pulg²", "0.2 pulg²", "−0.03 pulg²"],
+    topic:"Multiplicadores de Lagrange",
+    q:"Una empresa de logística necesita encontrar el punto de la ruta recta x+2y=5 (en km) más cercano a su centro de distribución, ubicado en el origen. Usando multiplicadores de Lagrange, ¿cuál es la distancia mínima del centro de distribución a la ruta?",
+    options:["√5 ≈ 2.24 km", "2 km", "√10 ≈ 3.16 km", "5 km"],
     correct:0,
     dificultad:"intermedio",
-    explain:"dA = (1/2)(y dx + x dy) = 0.5(4·0.05 + 3·(−0.03)) = 0.5(0.2−0.09) = 0.5(0.11) = 0.055 pulg²."
+    explain:"Minimizar f=x²+y² sujeto a g: x+2y=5. Lagrange: (2x,2y)=λ(1,2) → x=λ/2, y=λ. Sustituyendo en la restricción: λ/2+2λ=5 → λ=2, por lo que x=1,y=2. La distancia mínima es √(x²+y²)=√5≈2.24 km."
   },
   {
-    topic:"Diferenciales",
-    q:"Un triángulo tiene lados a=10, b=12 y el ángulo entre ellos θ=π/6. Si da=0.1, db=0.1 y dθ=0.01 rad, el cambio aproximado en el área A=(1/2)ab senθ usando diferenciales es:",
-    options:["≈ 1.07 unidades²", "≈ 0.55 unidades²", "≈ 3.0 unidades²", "≈ 51.96 unidades²"],
-    correct:0,
+    topic:"Multiplicadores de Lagrange",
+    q:"Un agricultor dispone de 40 metros de cerca para delimitar un corral rectangular (el perímetro debe ser exactamente 40 m). Usando multiplicadores de Lagrange, ¿qué dimensiones maximizan el área del corral, y cuál es esa área máxima?",
+    options:["20 m × 0 m, área = 0 m²", "10 m × 10 m, área = 400 m²", "10 m × 10 m, área = 100 m²", "15 m × 5 m, área = 75 m²"],
+    correct:2,
     dificultad:"intermedio",
-    explain:"dA = (1/2)b senθ·da + (1/2)a senθ·db + (1/2)ab cosθ·dθ = 3(0.1)+2.5(0.1)+51.96(0.01) ≈ 0.3+0.25+0.52 ≈ 1.07."
+    explain:"Maximizar A=xy sujeto a 2(x+y)=40, es decir x+y=20. Lagrange da x=y=10 (el rectángulo óptimo es un cuadrado). Área máxima = 10×10 = 100 m²."
   },
   {
-    topic:"Diferenciales",
-    q:"Usando diferenciales, al aproximar √(4.02² + 2.97²) con f(x,y)=√(x²+y²) cerca de (4,3), se obtiene:",
-    options:["≈ 4.998", "≈ 5.002", "≈ 5.05", "≈ 4.95"],
+    topic:"Multiplicadores de Lagrange",
+    q:"Un punto se mueve sobre la esfera x²+y²+z²=27. Usando multiplicadores de Lagrange, ¿cuál es el valor máximo que puede alcanzar la suma f(x,y,z)=x+y+z sobre esa esfera?",
+    options:["9", "3√3 ≈ 5.20", "27", "√27 ≈ 5.20"],
     correct:0,
     dificultad:"intermedio",
-    explain:"f(4,3)=5, fx=x/√(x²+y²)=0.8, fy=y/√(x²+y²)=0.6. Con dx=0.02, dy=−0.03: L=5+0.8(0.02)+0.6(−0.03)=5−0.002=4.998."
+    explain:"Lagrange: (1,1,1)=λ(2x,2y,2z) → x=y=z. Sustituyendo en x²+y²+z²=27: 3x²=27 → x=3 (la solución positiva da el máximo), x=y=z=3. f(3,3,3)=9."
   },
   {
-    topic:"Diferenciales",
-    q:"Para f(x,y) = x³ − x²y + 3y² en el punto (1,2), la diferencial df = fx dx + fy dy evaluada ahí es:",
-    options:["df = −dx + 11dy", "df = dx + 11dy", "df = −dx − 11dy", "df = 3dx + 2dy"],
+    topic:"Multiplicadores de Lagrange",
+    q:"Se busca el punto de la hipérbola xy=1 más cercano al origen. Usando multiplicadores de Lagrange, ¿cuál es la distancia mínima del origen a la curva?",
+    options:["√2 ≈ 1.41", "2", "√2/2 ≈ 0.71", "1"],
     correct:0,
     dificultad:"intermedio",
-    explain:"fx = 3x²−2xy, que en (1,2) da 3−4=−1. fy = −x²+6y, que en (1,2) da −1+12=11. Entonces df = −dx + 11dy."
+    explain:"Minimizar f=x²+y² sujeto a g: xy=1. Lagrange: (2x,2y)=λ(y,x) → x/y=y/x → x²=y². Sustituyendo en xy=1: x=y=1 (o x=y=-1). El valor mínimo de f es 1+1=2, por lo que la distancia mínima es √2≈1.41."
   },
   {
-    topic:"Diferenciales",
-    q:"Para f(x,y) = x² sen y + 2y^(3/2), la diferencial df es:",
-    options:["df = 2x sen y dx + (x² cos y + 3√y) dy", "df = 2x cos y dx + 3√y dy", "df = x² cos y dx + 2x sen y dy", "df = sen y dx + y^(1/2) dy"],
-    correct:0,
+    topic:"Multiplicadores de Lagrange",
+    q:"Un dron debe mantenerse sobre una trayectoria circular x²+y²=13 (en km) alrededor de una torre. Se desea maximizar la función de cobertura de señal f(x,y)=2x+3y sobre esa trayectoria. Usando multiplicadores de Lagrange, ¿cuál es el valor máximo de f, y en qué punto se alcanza?",
+    options:["13, en (3,2)", "13, en (2,3)", "26, en (4,6)", "√13 ≈ 3.61, en (2,3)"],
+    correct:1,
     dificultad:"intermedio",
-    explain:"fx = 2x sen y. fy = x² cos y + 2·(3/2)y^(1/2) = x² cos y + 3√y. Entonces df = 2x sen y dx + (x² cos y + 3√y) dy."
-  },
-  {
-    topic:"Diferenciales",
-    q:"Para f(x,y) = tan⁻¹(x+2y) en el punto (1,0), la diferencial df = fx dx + fy dy evaluada ahí es:",
-    options:["df = (1/2)dx + dy", "df = dx + 2dy", "df = (1/2)dx + (1/2)dy", "df = 2dx + dy"],
-    correct:0,
-    dificultad:"intermedio",
-    explain:"fx = 1/(1+(x+2y)²), fy = 2/(1+(x+2y)²). En (1,0): x+2y=1, así que el denominador es 1+1=2. Entonces fx=1/2 y fy=2/2=1, dando df=(1/2)dx+dy."
-  },
-  {
-    topic:"Diferenciales",
-    q:"Dos resistores en paralelo dan una resistencia total R = R₁R₂/(R₁+R₂). Con R₁=100Ω, R₂=200Ω y posibles errores dR₁=dR₂=2Ω, el error máximo aproximado en R usando diferenciales es:",
-    options:["≈ 1.11 Ω", "≈ 4 Ω", "≈ 0.44 Ω", "≈ 2 Ω"],
-    correct:0,
-    dificultad:"intermedio",
-    explain:"∂R/∂R₁ = R₂²/(R₁+R₂)² = 40000/90000 ≈ 0.444; ∂R/∂R₂ = R₁²/(R₁+R₂)² ≈ 0.111. dR ≈ 0.444(2)+0.111(2) = 0.889+0.222 ≈ 1.11 Ω."
-  },
-  {
-    topic:"Diferenciales",
-    q:"En la definición formal de diferenciabilidad, el incremento se escribe como Δf = fx(a,b)Δx + fy(a,b)Δy + ε₁Δx + ε₂Δy. ¿Qué condición deben cumplir ε₁ y ε₂?",
-    options:["Deben tender a 0 cuando (Δx,Δy)→(0,0)", "Deben ser constantes distintas de cero", "Deben ser iguales a fx y fy", "No tienen ninguna restricción particular"],
-    correct:0,
-    dificultad:"intermedio",
-    explain:"La definición formal exige que los términos de error ε₁, ε₂ se vuelvan despreciables (tiendan a 0) a medida que el punto se acerca, garantizando que el plano tangente sea una buena aproximación local."
+    explain:"Lagrange: (2,3)=λ(2x,2y) → x/y=2/3, es decir y=1.5x. Sustituyendo en x²+y²=13: x²+2.25x²=13 → x²=4 → x=2, y=3. f(2,3)=2(2)+3(3)=13."
   },
   // ---- Difícil ----
   {
-    topic:"Diferenciales",
-    q:"Una topógrafa mide los lados de un campo rectangular obteniendo x=500 pies y y=700 pies, con un posible error de 1 pie en cada medición. Usando diferenciales, el error máximo aproximado en el área calculada A=xy es:",
-    options:["1200 pies²", "600 pies²", "2400 pies²", "350 000 pies²"],
+    topic:"Multiplicadores de Lagrange",
+    q:"Un consumidor tiene la función de utilidad U(x,y)=x^0.6 y^0.4 para dos bienes, con precios de 4 y 2 por unidad respectivamente, y un presupuesto de 120 (es decir, 4x+2y=120). Usando multiplicadores de Lagrange, ¿qué combinación (x,y) maximiza la utilidad, y cuál es el valor máximo aproximado de U?",
+    options:["x=18, y=24, U≈20.20", "x=30, y=0, U≈17.5", "x=15, y=30, U≈19.8", "x=24, y=18, U≈20.20"],
     correct:0,
     dificultad:"dificil",
-    explain:"dA = y dx + x dy = 700(1) + 500(1) = 1200 pies², el error máximo aproximado en el área con los errores dados de 1 pie en cada lado."
+    explain:"Lagrange: (0.6x^-0.4 y^0.4, 0.4x^0.6 y^-0.6) = λ(4,2). Dividiendo ambas ecuaciones: (0.6y)/(0.4x) = 2 → y=(4/3)x. Sustituyendo en 4x+2y=120: 4x+(8/3)x=120 → x=18, y=24. U(18,24)=18^0.6·24^0.4≈20.20."
   },
   {
-    topic:"Diferenciales",
-    q:"El volumen de un cono circular recto es V=(1/3)πr²h. Con r=6cm y h=10cm medidos con posibles errores dr=0.1cm y dh=0.2cm, el error máximo aproximado en V usando diferenciales es:",
-    options:["≈ 20.11 cm³", "≈ 12.57 cm³", "≈ 37.70 cm³", "≈ 3.77 cm³"],
+    topic:"Multiplicadores de Lagrange",
+    q:"Se requiere que la suma de las tres dimensiones x, y, z de una caja rectangular sea igual a 18 cm (x+y+z=18). Usando multiplicadores de Lagrange, ¿qué dimensiones maximizan el volumen V=xyz de la caja, y cuál es ese volumen máximo?",
+    options:["x=18, y=z=0, V=0", "x=y=z=6 cm, V=216 cm³", "x=y=z=6 cm, V=108 cm³", "x=9, y=9, z=0, V=0"],
+    correct:1,
+    dificultad:"dificil",
+    explain:"Maximizar V=xyz sujeto a x+y+z=18. Lagrange: (yz,xz,xy)=λ(1,1,1) → yz=xz=xy, lo que implica x=y=z. Sustituyendo: 3x=18 → x=y=z=6. Volumen máximo = 6×6×6 = 216 cm³."
+  },
+  {
+    topic:"Multiplicadores de Lagrange",
+    q:"Una fábrica produce dos artículos, con costos C(x,y)=2x²+3y² (en miles de pesos), y debe cumplir una cuota total de producción de 50 unidades (x+y=50). Usando multiplicadores de Lagrange, ¿qué combinación (x,y) minimiza el costo total, y cuál es ese costo mínimo?",
+    options:["x=30, y=20, costo=1500 mil", "x=20, y=30, costo=3400 mil", "x=30, y=20, costo=3000 mil", "x=25, y=25, costo=3125 mil"],
+    correct:2,
+    dificultad:"dificil",
+    explain:"Lagrange: (4x,6y)=λ(1,1) → 4x=6y → x=1.5y. Sustituyendo en x+y=50: 1.5y+y=50 → y=20, x=30. Costo = 2(30)²+3(20)²=1800+1200=3000 mil pesos."
+  },
+  {
+    topic:"Multiplicadores de Lagrange",
+    q:"Se desea inscribir una caja rectangular (con caras paralelas a los ejes) dentro de una esfera de radio 6 (x²+y²+z²=36), de modo que sus 8 vértices toquen la esfera. Usando multiplicadores de Lagrange para maximizar el volumen V=8xyz (donde x,y,z>0 son las semi-dimensiones), ¿cuál es el volumen máximo aproximado de la caja?",
+    options:["≈332.6", "≈432", "≈216", "≈166.3"],
     correct:0,
     dificultad:"dificil",
-    explain:"∂V/∂r=(2/3)πrh≈125.66, ∂V/∂h=(1/3)πr²≈37.70. dV ≈ 125.66(0.1)+37.70(0.2) = 12.57+7.54 ≈ 20.11 cm³."
+    explain:"Maximizar V=8xyz sujeto a x²+y²+z²=36. Por simetría del sistema de Lagrange se obtiene x=y=z, y 3x²=36 → x=2√3. V=8(2√3)³=8·24√3=192√3≈332.6."
   },
   {
-    topic:"Diferenciales",
-    q:"Un terreno triangular tiene lados a=50m, b=70m con ángulo entre ellos θ=60°. Si da=db=0.5m y dθ=0.02 rad, el error porcentual máximo aproximado en el área A=(1/2)ab senθ es:",
-    options:["≈ 2.9%", "≈ 1.5%", "≈ 5.7%", "≈ 0.3%"],
-    correct:0,
+    topic:"Multiplicadores de Lagrange",
+    q:"Tres cantidades positivas x,y,z deben cumplir que su producto sea xyz=8. Usando multiplicadores de Lagrange, ¿cuál es el valor mínimo posible de la suma x+y+z?",
+    options:["4", "12", "8", "6"],
+    correct:3,
     dificultad:"dificil",
-    explain:"A≈1515.5 m². dA = (1/2)b senθ·da+(1/2)a senθ·db+(1/2)ab cosθ·dθ ≈ 15.16+10.83+17.50 ≈ 43.48 m². Error porcentual: 43.48/1515.5 ×100 ≈ 2.9%."
+    explain:"Minimizar x+y+z sujeto a xyz=8. Lagrange da x=y=z (por simetría del sistema). Sustituyendo: x³=8 → x=2, por lo que x=y=z=2 y la suma mínima es 6."
   },
   {
-    topic:"Diferenciales",
-    q:"La concentración máxima de cierto fármaco en la sangre es C = kD/V, donde D es la dosis y V el volumen de distribución. Si D tiene un posible error relativo del 3% y V del 2%, usando diferenciales (derivada logarítmica) el error porcentual máximo aproximado en C es:",
-    options:["≈ 5%", "≈ 1%", "≈ 6%", "≈ 0.06%"],
-    correct:0,
+    topic:"Multiplicadores de Lagrange",
+    q:"Una empresa de envases diseña una lata cilíndrica (sin considerar el grosor del material) que debe tener un volumen fijo de 16π cm³ (V=πr²h=16π). Usando multiplicadores de Lagrange para minimizar el área de material S=2πrh+2πr², ¿cuáles son las dimensiones óptimas y el área mínima aproximada?",
+    options:["r=4 cm, h=1 cm, S≈62.8 cm²", "r=2 cm, h=4 cm, S≈50.3 cm²", "r=1 cm, h=16 cm, S≈106.8 cm²", "r=2 cm, h=4 cm, S≈75.4 cm²"],
+    correct:3,
     dificultad:"dificil",
-    explain:"Tomando logaritmo: ln C = ln k + ln D − ln V. Diferenciando: dC/C = dD/D − dV/V. El error máximo se estima sumando los valores absolutos de los errores relativos: 3%+2%=5%."
+    explain:"Lagrange sobre S=2πrh+2πr² sujeto a r²h=16 da h=2r. Sustituyendo: r²(2r)=16 → r³=8 → r=2, h=4. S=2π(2)(4)+2π(2)²=16π+8π=24π≈75.4 cm²."
   },
-  {
-    topic:"Diferenciales",
-    q:"Si f(x,y) es diferenciable en (a,b) pero se evalúa su aproximación lineal L(x,y) en un punto alejado de (a,b), lo esperable es que:",
-    options:["El error |f−L| crezca, porque la aproximación lineal solo es confiable cerca del punto de linealización", "El error siempre sea exactamente 0, sin importar la distancia", "L(x,y) deje de estar definida", "f deje de ser diferenciable en ese otro punto"],
-    correct:0,
-    dificultad:"dificil",
-    explain:"La linealización L(x,y) es el plano tangente en (a,b): es una buena aproximación solo localmente. Entre más lejos se evalúe de (a,b), mayor es la curvatura de f que el plano no logra capturar, y el error crece."
-  },
-  {
-    topic:"Diferenciales",
-    q:"Un recipiente cilíndrico tiene radio r=5cm y altura h=12cm, medidos con posibles errores relativos dr/r=1% y dh/h=0.5%. Usando diferenciales (derivada logarítmica de V=πr²h), el error porcentual máximo aproximado en el volumen es:",
-    options:["≈ 2.5%", "≈ 1.5%", "≈ 1%", "≈ 3.5%"],
-    correct:0,
-    dificultad:"dificil",
-    explain:"ln V = ln π + 2 ln r + ln h. Diferenciando: dV/V = 2(dr/r) + dh/h = 2(1%) + 0.5% = 2.5%, el error porcentual máximo aproximado."
-  },
-  // ================================================================
-  // TEMA 3: REGLA DE LA CADENA Y RAZONES RELACIONADAS
-  // ================================================================
-  // ---- Fácil ----
-  {
-    topic:"Regla de la Cadena",
-    q:"La regla de la cadena para z=f(x,y) con x=x(t), y=y(t) establece que dz/dt es:",
-    options:["fx·(dx/dt) + fy·(dy/dt)", "fx + fy", "fx·fy", "dx/dt + dy/dt"],
-    correct:0,
-    dificultad:"facil",
-    explain:"Cada variable intermedia aporta su propia 'cadena': se multiplica la derivada parcial de f respecto a esa variable por la derivada de esa variable respecto a t, y se suman las contribuciones."
-  },
-  {
-    topic:"Regla de la Cadena",
-    q:"Si z=x²y, con x=t, y=t², entonces dz/dt usando la regla de la cadena es:",
-    options:["4t³", "2t³", "t³", "2t²"],
-    correct:0,
-    dificultad:"facil",
-    explain:"dz/dt = zx·(dx/dt) + zy·(dy/dt) = (2xy)(1) + (x²)(2t). Sustituyendo x=t, y=t²: 2(t)(t²)(1) + (t²)(2t) = 2t³+2t³ = 4t³."
-  },
-  {
-    topic:"Regla de la Cadena",
-    q:"Para z=f(x,y) con x=g(s,t), y=h(s,t), la derivada parcial ∂z/∂s según la regla de la cadena es:",
-    options:["(∂z/∂x)(∂x/∂s) + (∂z/∂y)(∂y/∂s)", "(∂z/∂x) + (∂z/∂y)", "(∂z/∂x)(∂x/∂t)", "∂x/∂s + ∂y/∂s"],
-    correct:0,
-    dificultad:"facil",
-    explain:"Cuando x,y dependen de s y t, calcular ∂z/∂s suma la contribución de cada variable intermedia a través de su propia derivada parcial respecto a s."
-  },
-  {
-    topic:"Regla de la Cadena",
-    q:"Cuando hay dos variables intermedias (x,y) que a su vez dependen de dos variables finales (s,t), el número de términos (sumandos) para calcular ∂z/∂s por regla de la cadena es:",
-    options:["2 (uno por cada variable intermedia)", "1", "4", "0"],
-    correct:0,
-    dificultad:"facil",
-    explain:"Como z depende de x e y, y ambas dependen de s, hay exactamente dos 'caminos' hacia s: a través de x y a través de y, cada uno aportando un término a la suma."
-  },
-  {
-    topic:"Regla de la Cadena",
-    q:"La regla de la cadena se usa típicamente en problemas de 'razones relacionadas' porque permite:",
-    options:["Relacionar la razón de cambio de una cantidad con las razones de cambio de las variables de las que depende", "Calcular máximos y mínimos absolutos", "Resolver ecuaciones diferenciales de segundo orden", "Graficar superficies en 3D"],
-    correct:0,
-    dificultad:"facil",
-    explain:"En razones relacionadas, varias cantidades cambian con el tiempo a la vez; la regla de la cadena permite expresar la razón de cambio de una variable dependiente en términos de las razones de cambio conocidas de las variables de las que depende."
-  },
-  {
-    topic:"Regla de la Cadena",
-    q:"Si w=xyz con x=t, y=t², z=t³, entonces dw/dt evaluada en t=1, usando la regla de la cadena, es:",
-    options:["6", "3", "9", "1"],
-    correct:0,
-    dificultad:"facil",
-    explain:"dw/dt = yz(dx/dt)+xz(dy/dt)+xy(dz/dt). En t=1: x=y=z=1, dx/dt=1, dy/dt=2, dz/dt=3. Entonces dw/dt=1(1)+1(2)+1(3)=6."
-  },
-  {
-    topic:"Regla de la Cadena",
-    q:"Si F(x,y,z)=0 define z implícitamente como función de x,y, la regla de la cadena da la fórmula ∂z/∂x =:",
-    options:["−Fx/Fz (siempre que Fz≠0)", "Fx/Fy", "−Fx/Fy", "Fz/Fx"],
-    correct:0,
-    dificultad:"facil",
-    explain:"Derivando F(x,y,z(x,y))=0 respecto a x con la regla de la cadena: Fx + Fz·(∂z/∂x) = 0, de donde ∂z/∂x = −Fx/Fz."
-  },
+  /* ================================================================
+     TEMA 3: MÁXIMOS Y MÍNIMOS
+     ================================================================ */
   // ---- Intermedio ----
   {
-    topic:"Regla de la Cadena",
-    q:"La temperatura en un punto (x,y) es T(x,y). Un insecto se mueve según x=√(1+t), y=2+t/3. Se sabe que en el punto (2,3), Tx=4 y Ty=3. La razón de cambio de la temperatura que siente el insecto en el instante en que pasa por (2,3) es:",
-    options:["2 °C/s", "4 °C/s", "1 °C/s", "7 °C/s"],
-    correct:0,
+    topic:"Máximos y Mínimos",
+    q:"La temperatura en una habitación se modela con T(x,y)=x²+y²-4x+6y+13 (°C), donde x,y son coordenadas en metros. Encuentra el punto crítico de T y clasifícalo.",
+    options:["(-2,3), mínimo local, T=26 °C", "(2,-3), punto silla", "(2,-3), máximo local, T=0 °C", "(2,-3), mínimo local, T=0 °C"],
+    correct:3,
     dificultad:"intermedio",
-    explain:"x=2 ocurre en t=3. dx/dt=1/(2√(1+t)), que en t=3 da 1/4; dy/dt=1/3. dT/dt = Tx(dx/dt)+Ty(dy/dt) = 4(1/4)+3(1/3) = 1+1 = 2 °C/s."
+    explain:"∇T=(2x-4,2y+6)=0 → x=2,y=-3. fxx=2, fyy=2, fxy=0, D=fxx·fyy-fxy²=4>0 y fxx>0: es un mínimo local. T(2,-3)=4+9-8-18+13=0 °C."
   },
   {
-    topic:"Regla de la Cadena",
-    q:"La demanda de un producto es Q(x,y)=200−10x²+20xy, donde x es su precio y y el precio de un competidor. En cierto mes x=10, y=15, con dx/dt=0.5 y dy/dt=0.8 ($/mes). La razón de cambio de la demanda en ese momento es:",
-    options:["210 unidades/mes", "100 unidades/mes", "160 unidades/mes", "50 unidades/mes"],
-    correct:0,
+    topic:"Máximos y Mínimos",
+    q:"Para la función f(x,y)=x³-3xy+y³, se encuentran dos puntos críticos: (0,0) y (1,1). Clasifica el punto (1,1).",
+    options:["Mínimo local, f(1,1)=1", "Punto silla", "Máximo local, f(1,1)=-1", "Mínimo local, f(1,1)=-1"],
+    correct:3,
     dificultad:"intermedio",
-    explain:"Qx=−20x+20y, que en (10,15) da 100. Qy=20x, que da 200. dQ/dt = Qx(dx/dt)+Qy(dy/dt) = 100(0.5)+200(0.8) = 50+160 = 210."
+    explain:"fx=3x²-3y, fy=-3x+3y². En (1,1): fxx=6, fyy=6, fxy=-3. D=36-9=27>0 y fxx>0: mínimo local. f(1,1)=1-3+1=-1. (El punto (0,0) es un punto silla, pues allí D=-9<0)."
   },
   {
-    topic:"Regla de la Cadena",
-    q:"Una compañía tiene producción q(k,l)=kl², con capital k(t)=2t² y trabajo l(t)=2t+5. La razón de cambio de la producción dq/dt en t=1, usando la regla de la cadena, es:",
-    options:["252", "196", "56", "28"],
-    correct:0,
+    topic:"Máximos y Mínimos",
+    q:"Clasifica el punto crítico de f(x,y)=x²-y² en el origen, una superficie que modela, por ejemplo, la forma de una silla de montar.",
+    options:["Máximo local", "Punto silla", "Mínimo local", "No es un punto crítico"],
+    correct:1,
     dificultad:"intermedio",
-    explain:"En t=1: k=2, l=7, dk/dt=4, dl/dt=2. qk=l²=49, ql=2kl=28. dq/dt = qk(dk/dt)+ql(dl/dt) = 49(4)+28(2) = 196+56 = 252."
+    explain:"∇f=(2x,-2y)=0 en (0,0). fxx=2, fyy=-2, fxy=0, D=2(-2)-0=-4<0: al ser D<0, (0,0) es un punto silla (la función crece en la dirección x y decrece en la dirección y)."
   },
   {
-    topic:"Regla de la Cadena",
-    q:"En un triángulo, el lado x aumenta a 3 pulg/seg, el lado y disminuye a 2 pulg/seg, y el ángulo θ entre ellos crece a 0.05 rad/s. El área es A=(1/2)xy senθ. Cuando x=40, y=50, θ=π/6, la razón de cambio del área es:",
-    options:["≈ 60.8 pulg²/s", "≈ 37.5 pulg²/s", "≈ 17.5 pulg²/s", "≈ 43.3 pulg²/s"],
-    correct:0,
+    topic:"Máximos y Mínimos",
+    q:"Una empresa modela su ganancia (en miles de dólares) al producir x,y unidades de dos productos como P(x,y)=-x²-y²+6x+8y-10. Encuentra el nivel de producción que maximiza la ganancia y el valor de esa ganancia máxima.",
+    options:["x=3, y=4, ganancia=25 mil", "x=-3, y=-4, ganancia=15 mil", "x=6, y=8, ganancia=15 mil", "x=3, y=4, ganancia máxima=15 mil"],
+    correct:3,
     dificultad:"intermedio",
-    explain:"Ax=(1/2)y senθ=12.5, Ay=(1/2)x senθ=10, Aθ=(1/2)xy cosθ≈866.0. dA/dt=12.5(3)+10(−2)+866.0(0.05)≈37.5−20+43.3≈60.8 pulg²/s."
+    explain:"∇P=(-2x+6,-2y+8)=0 → x=3,y=4. fxx=-2, fyy=-2, fxy=0, D=4>0 y fxx<0: máximo local (y global, al ser P un paraboloide hacia abajo). P(3,4)=-9-16+18+32-10=15 mil dólares."
   },
   {
-    topic:"Regla de la Cadena",
-    q:"Un cilindro tiene volumen V=πr²h. Si r crece a 0.5 cm/s y h decrece a 0.2 cm/s, cuando r=4cm y h=10cm, la razón de cambio del volumen es:",
-    options:["≈ 115.6 cm³/s", "≈ 251.3 cm³/s", "≈ 50.3 cm³/s", "≈ 135.7 cm³/s"],
-    correct:0,
+    topic:"Máximos y Mínimos",
+    q:"Clasifica el punto crítico de f(x,y)=x²+xy-3x+y² y encuentra su valor.",
+    options:["(2,-1), máximo local, f=-3", "(-2,1), mínimo local, f=-3", "(2,-1), punto silla", "(2,-1), mínimo local, f=-3"],
+    correct:3,
     dificultad:"intermedio",
-    explain:"Vr=2πrh≈251.3, Vh=πr²≈50.3. dV/dt = Vr(dr/dt)+Vh(dh/dt) ≈ 251.3(0.5)+50.3(−0.2) ≈ 125.7−10.1 ≈ 115.6 cm³/s."
+    explain:"fx=2x+y-3, fy=x+2y. Resolviendo el sistema: x=2,y=-1. fxx=2, fyy=2, fxy=1, D=4-1=3>0 y fxx>0: mínimo local. f(2,-1)=4-2-6+1=-3."
   },
   {
-    topic:"Regla de la Cadena",
-    q:"La ecuación x²+y²+z²=9 define z implícitamente cerca del punto (2,1,2). Usando la fórmula ∂z/∂x=−Fx/Fz con F=x²+y²+z²−9, el valor de ∂z/∂x en ese punto es:",
-    options:["−1", "1", "−2", "2"],
-    correct:0,
+    topic:"Máximos y Mínimos",
+    q:"Una empresa de manufactura modela el costo (en millones de pesos) de operar con dos variables de producción como C(x,y)=x²-2xy-2x+2y²-2y+10. Encuentra el punto que minimiza el costo y el costo mínimo.",
+    options:["x=2, y=3, costo mínimo=5 millones", "x=3, y=2, costo mínimo=15 millones", "x=3, y=2, costo mínimo=5 millones", "x=1, y=1, costo mínimo=9 millones"],
+    correct:2,
     dificultad:"intermedio",
-    explain:"Fx=2x=4, Fz=2z=4. ∂z/∂x=−Fx/Fz=−4/4=−1."
+    explain:"∇C=(2x-2y-2,-2x+4y-2)=0 → x-y=1 y -x+2y=1; resolviendo: x=3,y=2. fxx=2, fyy=4, fxy=-2, D=8-4=4>0 y fxx>0: mínimo. C(3,2)=9-12-6+8-4+10=5 millones."
   },
   {
-    topic:"Regla de la Cadena",
-    q:"Para la misma superficie x²+y²+z²=9 en el punto (2,1,2), el valor de ∂z/∂y es:",
-    options:["−1/2", "1/2", "−1", "1"],
-    correct:0,
+    topic:"Máximos y Mínimos",
+    q:"Encuentra el valor máximo absoluto de f(x,y)=xy en el cuadrado cerrado [0,4]×[0,4].",
+    options:["8, en (4,2)", "4, en (2,2)", "16, en el vértice (4,4)", "0, en el origen"],
+    correct:2,
     dificultad:"intermedio",
-    explain:"Fy=2y=2, Fz=2z=4. ∂z/∂y=−Fy/Fz=−2/4=−1/2."
+    explain:"El único punto crítico interior es (0,0) (punto silla, f=0). Sobre la frontera del cuadrado, f=xy se maximiza en la esquina donde ambas variables son máximas: (4,4), con f=16."
   },
   // ---- Difícil ----
   {
-    topic:"Regla de la Cadena",
-    q:"Sea w=xe^(y/z), con x=t², y=1−t, z=1+2t. Usando la regla de la cadena, dw/dt en t=0 es:",
-    options:["0", "e", "2e", "−e"],
+    topic:"Máximos y Mínimos",
+    q:"Para la función f(x,y)=4xy-x⁴-y⁴, se encuentran los puntos críticos (0,0), (1,1) y (-1,-1). Clasifica los puntos (1,1) y (-1,-1).",
+    options:["Ambos son máximos locales, con f=2", "Ambos son puntos silla", "Uno es máximo y el otro mínimo", "Ambos son mínimos locales, con f=2"],
     correct:0,
     dificultad:"dificil",
-    explain:"En t=0: x=0, dx/dt=2t=0. wy y wz tienen factor x=0, y el término de wx se multiplica por dx/dt=0. Los tres términos se anulan, así que dw/dt=0."
+    explain:"fx=4y-4x³, fy=4x-4y³. En (1,1): fxx=-12x²=-12, fyy=-12y²=-12, fxy=4. D=(-12)(-12)-16=128>0 y fxx<0: máximo local, f(1,1)=4-1-1=2. Por simetría, (-1,-1) también es máximo local con f=2. (El punto (0,0) es un punto silla, con D=-16<0)."
   },
   {
-    topic:"Regla de la Cadena",
-    q:"Para u=x²−y², con x=3r−s, y=r+2s, la derivada parcial ∂u/∂r usando la regla de la cadena, expresada en términos de r y s, es:",
-    options:["16r − 10s", "18r − 6s", "6x − 2y", "8r − 2s"],
+    topic:"Máximos y Mínimos",
+    q:"La temperatura en una placa circular de radio 3 (x²+y²≤9) se modela con T(x,y)=50-x²-y² (°C). ¿Cuál es la temperatura mínima que se alcanza en la placa (incluyendo su borde)?",
+    options:["41 °C, en todo el borde de la placa", "50 °C, en el centro", "23 °C", "0 °C"],
     correct:0,
     dificultad:"dificil",
-    explain:"∂u/∂r = ux(xr)+uy(yr) = (2x)(3)+(−2y)(1) = 6x−2y. Sustituyendo x=3r−s, y=r+2s y simplificando: 6(3r−s)−2(r+2s)=18r−6s−2r−4s=16r−10s."
+    explain:"El único punto crítico interior es (0,0), donde T=50 (el máximo absoluto). Como T solo depende de la distancia al origen y decrece hacia afuera, el mínimo se alcanza en el borde x²+y²=9: T=50-9=41 °C, el mismo valor en todo el borde."
   },
   {
-    topic:"Regla de la Cadena",
-    q:"Para z=e^(xy), con x=s+2t, y=s/t, la derivada parcial ∂z/∂t evaluada en (s,t)=(1,1), usando la regla de la cadena, es:",
-    options:["−e³", "e³", "2e³", "−2e³"],
+    topic:"Máximos y Mínimos",
+    q:"Para la función f(x,y)=sen(x)·sen(y), que modela un patrón de interferencia, clasifica el punto crítico (π/2, π/2).",
+    options:["Máximo local, f=1", "Punto silla", "Mínimo local, f=-1", "Mínimo local, f=1"],
     correct:0,
     dificultad:"dificil",
-    explain:"zx=ye^(xy), zy=xe^(xy); xt=2, yt=−s/t². En (s,t)=(1,1): x=3,y=1,xy=3. dz/dt=2y·e^(xy)+(−s/t²)x·e^(xy)=e³(2(1)−3)=−e³."
+    explain:"fx=cos(x)sen(y), fy=sen(x)cos(y); ambas se anulan en (π/2,π/2). fxx=-sen(x)sen(y)=-1, fyy=-1, fxy=cos(x)cos(y)=0. D=1>0 y fxx=-1<0: máximo local. f(π/2,π/2)=1."
   },
   {
-    topic:"Regla de la Cadena",
-    q:"La ecuación xy + sen(x−y+z) = 0 define z implícitamente cerca del punto (0,0,0). Usando ∂z/∂x=−Fx/Fz, el valor de ∂z/∂x en ese punto es:",
-    options:["−1", "1", "0", "2"],
-    correct:0,
+    topic:"Máximos y Mínimos",
+    q:"Para f(x,y)=x²+y²-2x definida sobre el disco cerrado x²+y²≤4, encuentra el valor máximo absoluto de f en esa región.",
+    options:["0, en el origen", "-1, en el punto (1,0)", "4, en el punto (2,0)", "8, en el punto (-2,0)"],
+    correct:3,
     dificultad:"dificil",
-    explain:"Fx=y+cos(x−y+z), que en (0,0,0) da 0+cos(0)=1. Fz=cos(x−y+z), que también da 1. Entonces ∂z/∂x=−Fx/Fz=−1/1=−1."
+    explain:"El punto crítico interior es (1,0) (mínimo, f=-1). En la frontera x²+y²=4, con x=2cosθ,y=2senθ: f=4-4cosθ, que varía entre 0 (θ=0) y 8 (θ=π, el punto (-2,0)). El máximo absoluto es 8."
   },
   {
-    topic:"Regla de la Cadena",
-    q:"Una función de producción Cobb-Douglas es q(k,l)=50k^0.4 l^0.6. Si k y l crecen a tasas relativas de 3% y 2% anual respectivamente, usando la regla de la cadena (derivada logarítmica) la tasa de crecimiento relativa de la producción dq/q es aproximadamente:",
-    options:["2.4% anual", "5% anual", "1.2% anual", "3.6% anual"],
+    topic:"Máximos y Mínimos",
+    q:"Clasifica el punto crítico de f(x,y)=x²-xy-2x+y²+y.",
+    options:["(1,0), mínimo local, f=-1", "(0,1), mínimo local, f=-1", "(1,0), punto silla", "(1,0), máximo local, f=-1"],
     correct:0,
     dificultad:"dificil",
-    explain:"Tomando logaritmo: ln q = ln 50 + 0.4 ln k + 0.6 ln l. Derivando: dq/q = 0.4(dk/k) + 0.6(dl/l) = 0.4(3%) + 0.6(2%) = 1.2%+1.2% = 2.4%."
+    explain:"fx=2x-y-2, fy=-x+2y+1. Resolviendo: x=1,y=0. fxx=2, fyy=2, fxy=-1, D=4-1=3>0 y fxx>0: mínimo local. f(1,0)=1-0-2+0+0=-1."
+  },
+  /* ================================================================
+     TEMA 4: INTEGRALES DOBLES
+     ================================================================ */
+  // ---- Intermedio ----
+  {
+    topic:"Integrales Dobles",
+    q:"Una placa rectangular ocupa la región 0≤x≤2, 0≤y≤3, con densidad superficial ρ(x,y)=xy (g/cm²). Calcula la masa total de la placa mediante una integral doble.",
+    options:["4.5 g", "18 g", "9 g", "6 g"],
+    correct:2,
+    dificultad:"intermedio",
+    explain:"Masa = ∫₀²∫₀³ xy dy dx = ∫₀² x·[y²/2]₀³ dx = ∫₀² 4.5x dx = 4.5·[x²/2]₀² = 4.5·2 = 9 g."
+  },
+  {
+    topic:"Integrales Dobles",
+    q:"Evalúa la integral doble ∬_R (2x+y) dA, donde R es el rectángulo 1≤x≤3, 0≤y≤2.",
+    options:["20", "24", "12", "16"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"∫₁³∫₀² (2x+y) dy dx = ∫₁³ [2xy+y²/2]₀² dx = ∫₁³ (4x+2) dx = [2x²+2x]₁³ = 24-4 = 20."
+  },
+  {
+    topic:"Integrales Dobles",
+    q:"Calcula ∬_R (x+y) dA, donde R es el triángulo limitado por y=0, x=1 y y=x (es decir, 0≤y≤x, 0≤x≤1).",
+    options:["1/2", "1", "1/3", "1/6"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"∫₀¹∫₀ˣ (x+y) dy dx = ∫₀¹ [xy+y²/2]₀ˣ dx = ∫₀¹ (3x²/2) dx = [x³/2]₀¹ = 1/2."
+  },
+  {
+    topic:"Integrales Dobles",
+    q:"La densidad de una lámina cuadrada 0≤x≤1, 0≤y≤1 es ρ(x,y)=xy (kg/m²). Calcula la masa total de la lámina.",
+    options:["1 kg", "1/2 kg", "1/8 kg", "1/4 kg"],
+    correct:3,
+    dificultad:"intermedio",
+    explain:"Masa = ∫₀¹∫₀¹ xy dy dx = ∫₀¹ x·(1/2) dx = (1/2)·(1/2) = 1/4 kg."
+  },
+  {
+    topic:"Integrales Dobles",
+    q:"Calcula el valor promedio de f(x,y)=x+y sobre el rectángulo R: 0≤x≤2, 0≤y≤4.",
+    options:["3", "4", "24", "6"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"Valor promedio = (1/Área)∬_R (x+y) dA. El área es 2·4=8. ∬_R(x+y)dA = ∫₀²∫₀⁴(x+y)dy dx = ∫₀²(4x+8)dx = 8+16=24. Promedio = 24/8 = 3."
+  },
+  {
+    topic:"Integrales Dobles",
+    q:"Calcula ∬_R y dA, donde R es la región limitada por y=0, y=√x y x=4.",
+    options:["2", "4", "16/3", "8"],
+    correct:1,
+    dificultad:"intermedio",
+    explain:"∫₀⁴∫₀^√x y dy dx = ∫₀⁴ [y²/2]₀^√x dx = ∫₀⁴ (x/2) dx = [x²/4]₀⁴ = 4."
+  },
+  {
+    topic:"Integrales Dobles",
+    q:"Calcula ∬_R x² dA, donde R es el triángulo de vértices (0,0), (2,0) y (0,2).",
+    options:["4/3", "8/3", "2", "1"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"La hipotenusa es la recta x+y=2, por lo que 0≤y≤2-x, 0≤x≤2. ∫₀²∫₀^(2-x) x² dy dx = ∫₀² x²(2-x) dx = [2x³/3-x⁴/4]₀² = 16/3-4 = 4/3."
+  },
+  // ---- Difícil ----
+  {
+    topic:"Integrales Dobles",
+    q:"Calcula ∬_R xy dA, donde R es la región entre las curvas y=x² (abajo) y y=x (arriba), para 0≤x≤1.",
+    options:["1/6", "1/12", "1/4", "1/24"],
+    correct:3,
+    dificultad:"dificil",
+    explain:"∫₀¹∫_{x²}^{x} xy dy dx = ∫₀¹ x·[y²/2]_{x²}^{x} dx = ∫₀¹ (x³/2-x⁵/2) dx = [x⁴/8-x⁶/12]₀¹ = 1/8-1/12 = 1/24."
+  },
+  {
+    topic:"Integrales Dobles",
+    q:"Calcula ∬_R (x²+y²) dA, donde R es el cuarto de disco x²+y²≤4 con x≥0, y≥0, usando coordenadas polares.",
+    options:["8π ≈ 25.13", "2π ≈ 6.28", "π ≈ 3.14", "4π ≈ 12.57"],
+    correct:1,
+    dificultad:"dificil",
+    explain:"En polares, x²+y²=r² y dA=r dr dθ. ∫₀^(π/2)∫₀² r³ dr dθ = ∫₀^(π/2) [r⁴/4]₀² dθ = ∫₀^(π/2) 4 dθ = 4·(π/2) = 2π ≈ 6.28."
+  },
+  {
+    topic:"Integrales Dobles",
+    q:"Un detector mide la intensidad de una señal que decae como e^{-(x²+y²)} sobre un disco de radio 3 centrado en el origen. Calcula ∬_R e^{-(x²+y²)} dA sobre ese disco (R: x²+y²≤9).",
+    options:["π·e⁻⁹ ≈ 0.0004", "2π ≈ 6.28", "π(1-e⁻⁹) ≈ 3.14", "9π ≈ 28.27"],
+    correct:2,
+    dificultad:"dificil",
+    explain:"En polares: ∫₀^(2π)∫₀³ e^(-r²)·r dr dθ = 2π·[-½e^(-r²)]₀³ = π(1-e⁻⁹) ≈ π(0.99988) ≈ 3.14 (prácticamente π, ya que e⁻⁹ es casi 0)."
+  },
+  {
+    topic:"Integrales Dobles",
+    q:"Un techo tiene la forma de un paraboloide z=4-x²-y² sobre la región circular x²+y²≤4 en el plano del suelo. Calcula el volumen bajo el techo (y sobre el suelo, donde z≥0) usando coordenadas polares.",
+    options:["16π ≈ 50.27", "2π ≈ 6.28", "8π ≈ 25.13", "4π ≈ 12.57"],
+    correct:2,
+    dificultad:"dificil",
+    explain:"V=∬_R (4-x²-y²) dA = ∫₀^(2π)∫₀² (4-r²)·r dr dθ = 2π·[2r²-r⁴/4]₀² = 2π·(8-4) = 8π ≈ 25.13."
+  },
+  {
+    topic:"Integrales Dobles",
+    q:"Dos superficies paraboloides, z=x²+y² (abriendo hacia arriba) y z=8-x²-y² (abriendo hacia abajo), encierran un sólido entre ellas. Calcula el volumen de ese sólido.",
+    options:["32π ≈ 100.53", "16π ≈ 50.27", "8π ≈ 25.13", "4π ≈ 12.57"],
+    correct:1,
+    dificultad:"dificil",
+    explain:"Las superficies se cortan donde x²+y²=8-x²-y², es decir r²=4, r=2. V=∬_R [(8-r²)-r²] dA = ∫₀^(2π)∫₀² (8-2r²)·r dr dθ = 2π·[4r²-r⁴/2]₀² = 2π·(16-8) = 16π ≈ 50.27."
+  },
+  /* ================================================================
+     TEMA 5: VOLÚMENES MEDIANTE EL JACOBIANO
+     ================================================================ */
+  // ---- Intermedio ----
+  {
+    topic:"Volúmenes mediante el Jacobiano",
+    q:"Para el cambio de variables x=u+v, y=u-v, calcula el jacobiano ∂(x,y)/∂(u,v).",
+    options:["-2", "1", "2", "-1"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"∂(x,y)/∂(u,v) = det[[1,1],[1,-1]] = (1)(-1)-(1)(1) = -2."
+  },
+  {
+    topic:"Volúmenes mediante el Jacobiano",
+    q:"En el cambio a coordenadas polares x=r cos(θ), y=r sen(θ), ¿cuál es el jacobiano ∂(x,y)/∂(r,θ)?",
+    options:["1", "sen(θ)cos(θ)", "r", "r²"],
+    correct:2,
+    dificultad:"intermedio",
+    explain:"∂(x,y)/∂(r,θ) = det[[cosθ, -r senθ],[senθ, r cosθ]] = r cos²θ + r sen²θ = r. Por eso en coordenadas polares se escribe dA = r dr dθ."
+  },
+  {
+    topic:"Volúmenes mediante el Jacobiano",
+    q:"Calcula, usando coordenadas esféricas (jacobiano ρ²senφ), el volumen de una esfera sólida de radio 3.",
+    options:["36π ≈ 113.10", "108π ≈ 339.29", "12π ≈ 37.70", "27π ≈ 84.82"],
+    correct:0,
+    dificultad:"intermedio",
+    explain:"V=∫₀^(2π)∫₀^π∫₀³ ρ² senφ dρ dφ dθ = 2π·2·[ρ³/3]₀³ = 2π·2·9 = 36π ≈ 113.10, lo que coincide con (4/3)πR³ para R=3."
+  },
+  {
+    topic:"Volúmenes mediante el Jacobiano",
+    q:"Para la transformación lineal x=3u-v, y=u+2v, calcula el área de la imagen del cuadrado unitario 0≤u≤1, 0≤v≤1.",
+    options:["4", "5", "7", "6"],
+    correct:2,
+    dificultad:"intermedio",
+    explain:"El jacobiano es J=det[[3,-1],[1,2]]=6-(-1)=7. El área de la imagen de una región es |J| multiplicado por el área original; como el cuadrado unitario tiene área 1, el área de su imagen (un paralelogramo) es 7."
+  },
+  {
+    topic:"Volúmenes mediante el Jacobiano",
+    q:"Para evaluar una integral sobre una región triangular, se aplica el cambio de variables u=x+y, v=x-y. Calcula el valor absoluto del jacobiano ∂(x,y)/∂(u,v).",
+    options:["1/4", "2", "1/2", "1"],
+    correct:2,
+    dificultad:"intermedio",
+    explain:"Despejando: x=(u+v)/2, y=(u-v)/2. El jacobiano es det[[1/2,1/2],[1/2,-1/2]] = -1/4-1/4 = -1/2, por lo que |∂(x,y)/∂(u,v)| = 1/2."
+  },
+  {
+    topic:"Volúmenes mediante el Jacobiano",
+    q:"Un tanque cilíndrico tiene radio 3 m y altura 5 m. Usando coordenadas cilíndricas (jacobiano r), calcula su volumen.",
+    options:["9π ≈ 28.27 m³", "15π ≈ 47.12 m³", "90π ≈ 282.74 m³", "45π ≈ 141.37 m³"],
+    correct:3,
+    dificultad:"intermedio",
+    explain:"V=∫₀^(2π)∫₀⁵∫₀³ r dr dz dθ = 2π·5·[r²/2]₀³ = 2π·5·4.5 = 45π ≈ 141.37 m³ (equivalente a πr²h)."
+  },
+  // ---- Difícil ----
+  {
+    topic:"Volúmenes mediante el Jacobiano",
+    q:"El jardín de una casa tiene forma elíptica, descrita por x²/4+y²/9≤1 (en metros). Usando el cambio de variable x=2u, y=3v (que transforma la elipse en el disco unitario u²+v²≤1), calcula el área del jardín mediante el jacobiano de la transformación.",
+    options:["18π ≈ 56.55 m²", "6π ≈ 18.85 m²", "12π ≈ 37.70 m²", "π ≈ 3.14 m²"],
+    correct:1,
+    dificultad:"dificil",
+    explain:"El jacobiano de x=2u,y=3v es J=det[[2,0],[0,3]]=6. El área de la elipse es |J| multiplicado por el área del disco unitario: Área = 6·π = 6π ≈ 18.85 m²."
+  },
+  {
+    topic:"Volúmenes mediante el Jacobiano",
+    q:"Un silo tiene forma de cono con radio de base R=3 m y altura h=6 m. Usando coordenadas cilíndricas (jacobiano r), calcula el volumen del cono.",
+    options:["54π ≈ 169.65 m³", "18π ≈ 56.55 m³", "36π ≈ 113.10 m³", "9π ≈ 28.27 m³"],
+    correct:1,
+    dificultad:"dificil",
+    explain:"En cilíndricas, 0≤r≤3 y la altura en cada radio es z=6(1-r/3). V=∫₀^(2π)∫₀³ r·6(1-r/3) dr dθ = 2π·[3r²-2r³/3]₀³ = 2π·(27-18) = 18π ≈ 56.55 m³ (equivale a (1/3)πR²h)."
+  },
+  {
+    topic:"Volúmenes mediante el Jacobiano",
+    q:"Un tanque de almacenamiento tiene forma de elipsoide completo x²/4+y²/9+z²/16≤1 (en metros). Usando el cambio de variable x=2u, y=3v, z=4w (jacobiano J=abc), calcula el volumen del tanque.",
+    options:["8π ≈ 25.13 m³", "96π ≈ 301.59 m³", "32π ≈ 100.53 m³", "24π ≈ 75.40 m³"],
+    correct:2,
+    dificultad:"dificil",
+    explain:"El jacobiano de la transformación es J=a·b·c=2·3·4=24. El volumen del elipsoide es |J| multiplicado por el volumen de la esfera unitaria (4/3)π: V = 24·(4/3)π = 32π ≈ 100.53 m³."
+  },
+  {
+    topic:"Volúmenes mediante el Jacobiano",
+    q:"Un cascarón esférico ocupa la región 1≤ρ≤2 (en metros), donde ρ es la distancia al origen. Usando coordenadas esféricas (jacobiano ρ²senφ), calcula el volumen del cascarón.",
+    options:["28π/3 ≈ 29.32 m³", "32π/3 ≈ 33.51 m³", "4π/3 ≈ 4.19 m³", "7π ≈ 21.99 m³"],
+    correct:0,
+    dificultad:"dificil",
+    explain:"V=∫₀^(2π)∫₀^π∫₁² ρ² senφ dρ dφ dθ = 2π·2·[ρ³/3]₁² = 4π·(8/3-1/3) = 28π/3 ≈ 29.32 m³ (el volumen de la esfera de radio 2 menos la de radio 1)."
+  },
+  {
+    topic:"Volúmenes mediante el Jacobiano",
+    q:"En el cambio de variables u=xy, v=x/y (con x,y>0), se puede demostrar que el jacobiano ∂(u,v)/∂(x,y) = -2v. Si en un punto dado v=2, ¿cuál es el valor absoluto del jacobiano inverso ∂(x,y)/∂(u,v) en ese punto?",
+    options:["4", "2", "1/4", "1/2"],
+    correct:2,
+    dificultad:"dificil",
+    explain:"Como ∂(x,y)/∂(u,v) es el recíproco de ∂(u,v)/∂(x,y), se tiene ∂(x,y)/∂(u,v) = 1/(-2v) = -1/(2v). Para v=2: |∂(x,y)/∂(u,v)| = 1/(2·2) = 1/4."
+  },
+  {
+    topic:"Volúmenes mediante el Jacobiano",
+    q:"Para la transformación T(u,v)=(u²-v², 2uv), calcula el valor del jacobiano ∂(x,y)/∂(u,v) en el punto (u,v)=(2,1).",
+    options:["8", "4", "12", "20"],
+    correct:3,
+    dificultad:"dificil",
+    explain:"x=u²-v², y=2uv. El jacobiano es det[[2u,-2v],[2v,2u]] = 4u²+4v². En (u,v)=(2,1): 4(4)+4(1)=20."
   }
 ];
 
@@ -1368,11 +1349,13 @@ btnMute.addEventListener("click", ()=>{
 const state = {
   studentName:"",
   studentCourse:"",
-  difficulty:"intermedio", // "facil" | "intermedio" | "dificil" — elegida en el registro
+  difficulty:"intermedio", // "intermedio" | "dificil" — elegida en el registro
   totalPits:10,
   currentPit:0,
   correct:0,
   wrong:0,
+  streak:0,
+  bestStreak:0,
   collisions:0,
   usedQuestionIdx:[],
   activeQuestionPool:[], // subconjunto de QUESTION_BANK filtrado por dificultad
@@ -1621,6 +1604,8 @@ function resetGameVars(){
   state.currentPit = 0;
   state.correct = 0;
   state.wrong = 0;
+  state.streak = 0;
+  state.bestStreak = 0;
   state.collisions = 0;
   state.usedQuestionIdx = [];
   state.pitResults = [];
@@ -2525,6 +2510,13 @@ function updateHud(){
   document.getElementById("hudPitFrac").textContent = state.currentPit + "/" + state.totalPits;
   document.getElementById("hudCorrect").textContent = state.correct;
   document.getElementById("hudWrong").textContent = state.wrong;
+  const streakWrap = document.getElementById("hudStreakWrap");
+  if(state.streak >= 2){
+    streakWrap.style.display = "flex";
+    document.getElementById("hudStreak").textContent = state.streak;
+  } else {
+    streakWrap.style.display = "none";
+  }
   const elapsed = state.startTime ? Math.max(0,Math.floor((performance.now()-state.startTime)/1000)) : 0;
   document.getElementById("hudTime").textContent = elapsed;
 }
@@ -2606,11 +2598,24 @@ function formatIntervalOption(text){
     + `</span>`;
 }
 
+// color distintivo por tema (coincide con las tarjetas del modal "Temas"),
+// para ubicar de un vistazo a qué tema pertenece la pregunta del pit
+const TOPIC_COLORS = {
+  "Derivadas Direccionales": "var(--neon-cyan)",
+  "Multiplicadores de Lagrange": "var(--neon-green)",
+  "Máximos y Mínimos": "var(--neon-magenta)",
+  "Integrales Dobles": "var(--neon-yellow)",
+  "Volúmenes mediante el Jacobiano": "var(--neon-orange)"
+};
+
 function openQuestionModal(idx, data){
   const isImage = data.type === "image";
 
   modalPitBadge.textContent = `PIT ${state.currentPit+1}/${state.totalPits}`;
   modalTopic.textContent = data.topic;
+  const topicColor = TOPIC_COLORS[data.topic] || "var(--neon-cyan)";
+  modalTopic.style.borderColor = topicColor;
+  modalTopic.style.color = topicColor;
   modalQuestion.textContent = data.q;
   modalOptions.innerHTML = "";
   modalOptions.className = "options" + (isImage ? " image-mode" : "");
@@ -2650,15 +2655,19 @@ function answerQuestion(selectedIdx, data, btnEl){
 
   if(isCorrect){
     btnEl.classList.add("correct");
-    modalFeedback.textContent = "¡Correcto! +1.0 punto";
-    modalFeedback.className = "feedback-msg ok";
     state.correct++;
+    state.streak++;
+    if(state.streak > state.bestStreak) state.bestStreak = state.streak;
+    const streakMsg = state.streak >= 2 ? ` · 🔥 Racha x${state.streak}` : "";
+    modalFeedback.textContent = "¡Correcto! +1.0 punto" + streakMsg;
+    modalFeedback.className = "feedback-msg ok";
   } else {
     btnEl.classList.add("wrong");
     allBtns[data.correct].classList.add("correct");
     modalFeedback.textContent = "Incorrecto. Respuesta correcta: " + label(data.options[data.correct]);
     modalFeedback.className = "feedback-msg bad";
     state.wrong++;
+    state.streak = 0;
   }
 
   state.pitResults.push({
@@ -2675,6 +2684,19 @@ function answerQuestion(selectedIdx, data, btnEl){
   updateHud();
   btnContinue.style.display = "inline-block";
 }
+
+// atajos de teclado dentro del modal de pregunta: 1-4 elige una opción,
+// Enter continúa una vez que la pregunta ya fue respondida
+window.addEventListener("keydown", e=>{
+  if(!modalOverlay.classList.contains("active")) return;
+  if(["1","2","3","4"].includes(e.key)){
+    const i = Number(e.key)-1;
+    const btns = modalOptions.querySelectorAll(".option-btn");
+    if(btns[i] && !btns[i].disabled) btns[i].click();
+  } else if(e.key === "Enter" && btnContinue.style.display !== "none"){
+    btnContinue.click();
+  }
+});
 
 btnContinue.addEventListener("click", ()=>{
   modalOverlay.classList.remove("active");
@@ -2710,6 +2732,7 @@ function finishGame(){
   document.getElementById("statWrong").textContent = state.wrong;
   document.getElementById("statCollisions").textContent = state.collisions;
   document.getElementById("statPercent").textContent = pct+"%";
+  document.getElementById("statBestStreak").textContent = state.bestStreak;
 
   buildReview();
   saveToLocalStorage(grade, pct);
